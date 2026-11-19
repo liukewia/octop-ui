@@ -17,6 +17,10 @@ import '@octop/ui/style.css';
 - **产物**：`dist/index.js`（~240KB / gzip 58KB）、`dist/octop-ui.css`（~63KB / gzip 12KB）、完整 `.d.ts`
 - **React**：`^18.2 || ^19`，声明为 peer dependency，不打包进产物
 
+![展厅首屏](docs/demo-light.png)
+
+> 展厅（`npm run dev`）按 antd 的分类把 55 个组件铺开，浅色 / 深色 / 390px 窄屏都能直接看。
+
 ---
 
 ## 为什么不是 "再包一层 antd"
