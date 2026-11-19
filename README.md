@@ -17,9 +17,12 @@ import '@octop/ui/style.css';
 - **产物**：`dist/index.js`（~240KB / gzip 58KB）、`dist/octop-ui.css`（~63KB / gzip 12KB）、完整 `.d.ts`
 - **React**：`^18.2 || ^19`，声明为 peer dependency，不打包进产物
 
+**在线展厅**：<https://liukewia.github.io/octop-ui/>（`?theme=dark` 直接进深色）
+
 ![展厅首屏](docs/demo-light.png)
 
 > 展厅（`npm run dev`）按 antd 的分类把 55 个组件铺开，浅色 / 深色 / 390px 窄屏都能直接看。
+> 每次 push 到 `main`，`.github/workflows/pages.yml` 会构建并发布到 GitHub Pages。
 
 ---
 
@@ -63,7 +66,11 @@ npm run dev          # 展厅 demo（就是本仓库的验收页）
 npm run typecheck    # tsc --noEmit
 npm run build        # 类型声明 + 库产物到 dist/
 npm run demo:build   # 静态化展厅，输出 demo-dist/
+npm run demo:preview # 本地预览 demo-dist/
 ```
+
+展厅的构建用相对 `base`（`base: './'`），所以同一个 `demo-dist/` 既能本地 `preview`，
+也能直接丢进任意子路径的静态托管（GitHub Pages 的 project site 就在 `/octop-ui/` 下）。
 
 ---
 
@@ -301,6 +308,7 @@ demo/
 - `npm run typecheck`：0 error
 - `npm run build`：类型声明 + 库产物，无外部依赖被打包（全部 external）
 - `npm run demo:build` + `demo:preview`：展厅可静态化，浅色 / 深色 / 390px 窄屏三套都在盯
+- GitHub Pages：<https://liukewia.github.io/octop-ui/> — push `main` 自动构建发布，线上浅色 / 深色均已核对
 
 ## License
 
