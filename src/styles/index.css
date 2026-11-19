@@ -1,0 +1,636 @@
+/* =============================================================================
+   @octop/ui — 样式基座
+   -----------------------------------------------------------------------------
+   三层结构（与 antd-themed 参考实现同构）：
+     1) 令牌：:root / .dark 上的 --ax-*，数值取自 Astryx（theme-neutral 0.7.x），
+        按 C 端场景做了三处调校：控件高度从 28/32/36 抬到 32/40/48、
+        正文从 14 抬到 15、触屏指针下再自动 +4px。
+     2) 映射：@theme inline 把令牌暴露成 Tailwind 语义类（bg-surface / text-fg /
+        rounded-element / ease-standard …），组件只写语义类，不写十六进制。
+     3) 修正：@layer components 里的 .ax-* —— 焦点两套语言、按压叠色、
+        描边档位、动效时钟，这些 Tailwind 表达不了或表达出来会被复用的部分。
+   ============================================================================= */
+
+@import 'tailwindcss';
+
+@source '../**/*.{ts,tsx}';
+@source '../../demo/**/*.{ts,tsx}';
+
+/* shadcn 用 .dark 类切换，而不是 prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------- 1) 令牌 */
+
+:root {
+  color-scheme: light;
+
+  /* 面 */
+  --ax-bg: #ffffff;
+  --ax-surface: #ffffff;
+  --ax-raised: #ffffff;
+  --ax-canvas: #f1f1f1;
+  --ax-muted: rgba(0, 0, 0, 0.06);
+  --ax-muted-soft: rgba(0, 0, 0, 0.035);
+  --ax-muted-strong: rgba(0, 0, 0, 0.09);
+
+  /* 字 */
+  --ax-fg: #000000;
+  --ax-fg-secondary: #474747;
+  --ax-fg-tertiary: #6a6a6a;
+  --ax-fg-disabled: #919191;
+  --ax-fg-inverse: #ffffff;
+
+  /* 线：Astryx 的层次靠描边而不是投影 */
+  --ax-line: rgba(0, 0, 0, 0.08);
+  --ax-line-soft: rgba(0, 0, 0, 0.05);
+  --ax-line-strong: #d4d4d4;
+  --ax-track: #ccd3db;
+
+  /* 主色：Astryx 是单色 accent，不是蓝 */
+  --ax-accent: #1b1b1b;
+  --ax-accent-hover: #3d3d3d;
+  --ax-accent-soft: #d4d4d4;
+  --ax-on-accent: #ffffff;
+
+  /* 语义 */
+  --ax-danger: #c9303a;
+  --ax-danger-bg: #ffc4be;
+  --ax-danger-fg: #76000c;
+  --ax-success: #198100;
+  --ax-success-bg: #bce0bb;
+  --ax-success-fg: #00490b;
+  --ax-warning: #ffce2f;
+  --ax-warning-bg: #fae19e;
+  --ax-warning-fg: #4b3900;
+  --ax-info: #0074e2;
+  --ax-info-bg: #b9d7ff;
+  --ax-info-fg: #003978;
+
+  /* 十色板（Badge / Tag） */
+  --ax-hue-gray-bg: #e2e2e2;
+  --ax-hue-gray-fg: #1b1b1b;
+  --ax-hue-red-bg: #ffc4be;
+  --ax-hue-red-fg: #76000c;
+  --ax-hue-orange-bg: #ffc7a1;
+  --ax-hue-orange-fg: #622700;
+  --ax-hue-yellow-bg: #fae19e;
+  --ax-hue-yellow-fg: #4b3900;
+  --ax-hue-green-bg: #bce0bb;
+  --ax-hue-green-fg: #00490b;
+  --ax-hue-teal-bg: #a9e2d6;
+  --ax-hue-teal-fg: #00463d;
+  --ax-hue-cyan-bg: #9ae2f4;
+  --ax-hue-cyan-fg: #004351;
+  --ax-hue-blue-bg: #b9d7ff;
+  --ax-hue-blue-fg: #003978;
+  --ax-hue-purple-bg: #f7d5ff;
+  --ax-hue-purple-fg: #5c0e6c;
+  --ax-hue-pink-bg: #ffc0d7;
+  --ax-hue-pink-fg: #70003f;
+
+  /* 尺 */
+  --ax-radius-inner: 6px;
+  --ax-radius-element: 10px;
+  --ax-radius-container: 12px;
+  --ax-radius-page: 28px;
+  --ax-radius-full: 9999px;
+
+  --ax-h-sm: 32px;
+  --ax-h-md: 40px;
+  --ax-h-lg: 48px;
+
+  /* 时钟：95 / 125 / 165 / 225 / 300 / 400 / 525 —— 不是「一个 200ms 打天下」 */
+  --ax-dur-fast: 125ms;
+  --ax-dur-fast-max: 165ms;
+  --ax-dur-medium-min: 225ms;
+  --ax-dur-medium: 300ms;
+  --ax-dur-medium-max: 400ms;
+  --ax-dur-spin: 525ms;
+  --ax-ease-standard: cubic-bezier(0.24, 1, 0.4, 1);
+  --ax-ease-exit: cubic-bezier(0.3, 0, 0.6, 0.6);
+
+  /* 按压：Astryx 是叠一层实色，不是波纹，也不是压扁 */
+  --ax-press: rgba(0, 0, 0, 0.1);
+  --ax-press-soft: rgba(0, 0, 0, 0.06);
+
+  /* 影：浮层靠影，卡片靠描边 */
+  --ax-shadow-pop: 0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.08);
+  --ax-shadow-med: 0 2px 4px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.1);
+  --ax-shadow-high: 0 2px 2px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.1);
+
+  --ax-selection: rgba(27, 27, 27, 0.18);
+  --ax-skeleton: #e9e9e9;
+  --ax-mask: rgba(0, 0, 0, 0.45);
+
+  --ax-font: Figtree, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --ax-font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --ax-bg: #1b1b1b;
+  --ax-surface: #262626;
+  --ax-raised: #2c2c2c;
+  --ax-canvas: #141414;
+  --ax-muted: rgba(255, 255, 255, 0.1);
+  --ax-muted-soft: rgba(255, 255, 255, 0.055);
+  --ax-muted-strong: rgba(255, 255, 255, 0.14);
+
+  --ax-fg: #ffffff;
+  --ax-fg-secondary: #9e9e9e;
+  --ax-fg-tertiary: #c6c6c6;
+  --ax-fg-disabled: #525252;
+  --ax-fg-inverse: #111111;
+
+  --ax-line: rgba(255, 255, 255, 0.1);
+  --ax-line-soft: rgba(255, 255, 255, 0.06);
+  --ax-line-strong: #525252;
+  --ax-track: #5a5e66;
+
+  /* 主色反相：暗色下近白，这是 Astryx 最鲜明的特征 */
+  --ax-accent: #f1f1f1;
+  --ax-accent-hover: #ffffff;
+  --ax-accent-soft: #474747;
+  --ax-on-accent: #111111;
+
+  --ax-danger: #ff705d;
+  --ax-danger-bg: #5b2b28;
+  --ax-danger-fg: #ffaea7;
+  --ax-success: #64af4c;
+  --ax-success-bg: #2b422b;
+  --ax-success-fg: #90ca90;
+  --ax-warning: #ffce2f;
+  --ax-warning-bg: #453a1c;
+  --ax-warning-fg: #eec448;
+  --ax-info: #6d9cfe;
+  --ax-info-bg: #253c5a;
+  --ax-info-fg: #a1caff;
+
+  --ax-hue-gray-bg: #303030;
+  --ax-hue-gray-fg: #d4d4d4;
+  --ax-hue-red-bg: #5b2b28;
+  --ax-hue-red-fg: #ffaea7;
+  --ax-hue-orange-bg: #503424;
+  --ax-hue-orange-fg: #ffb37e;
+  --ax-hue-yellow-bg: #453a1c;
+  --ax-hue-yellow-fg: #eec448;
+  --ax-hue-green-bg: #2b422b;
+  --ax-hue-green-fg: #90ca90;
+  --ax-hue-teal-bg: #28413c;
+  --ax-hue-teal-fg: #90d7c8;
+  --ax-hue-cyan-bg: #274046;
+  --ax-hue-cyan-fg: #85d5e9;
+  --ax-hue-blue-bg: #253c5a;
+  --ax-hue-blue-fg: #a1caff;
+  --ax-hue-purple-bg: #4a2f51;
+  --ax-hue-purple-fg: #eaacf8;
+  --ax-hue-pink-bg: #572b3d;
+  --ax-hue-pink-fg: #ffa9ca;
+
+  --ax-press: rgba(255, 255, 255, 0.1);
+  --ax-press-soft: rgba(255, 255, 255, 0.06);
+
+  --ax-shadow-pop: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.32),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --ax-shadow-med: 0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  --ax-shadow-high: 0 2px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+
+  --ax-selection: rgba(241, 241, 241, 0.22);
+  --ax-skeleton: #383838;
+  --ax-mask: rgba(0, 0, 0, 0.7);
+}
+
+/* 触屏：C 端场景下控件自动长高到可点区，同一份组件代码不用改 */
+@media (pointer: coarse) {
+  :root {
+    --ax-h-sm: 36px;
+    --ax-h-md: 44px;
+    --ax-h-lg: 52px;
+  }
+}
+
+/* ------------------------------------------------------- 2) Tailwind 映射 */
+
+@theme inline {
+  --font-sans: var(--ax-font);
+  --font-mono: var(--ax-font-mono);
+
+  --color-bg: var(--ax-bg);
+  --color-surface: var(--ax-surface);
+  --color-raised: var(--ax-raised);
+  --color-canvas: var(--ax-canvas);
+  --color-muted: var(--ax-muted);
+  --color-muted-soft: var(--ax-muted-soft);
+  --color-muted-strong: var(--ax-muted-strong);
+
+  --color-fg: var(--ax-fg);
+  --color-fg-secondary: var(--ax-fg-secondary);
+  --color-fg-tertiary: var(--ax-fg-tertiary);
+  --color-fg-disabled: var(--ax-fg-disabled);
+  --color-fg-inverse: var(--ax-fg-inverse);
+
+  --color-line: var(--ax-line);
+  --color-line-soft: var(--ax-line-soft);
+  --color-line-strong: var(--ax-line-strong);
+  --color-track: var(--ax-track);
+
+  --color-accent: var(--ax-accent);
+  --color-accent-hover: var(--ax-accent-hover);
+  --color-accent-soft: var(--ax-accent-soft);
+  --color-on-accent: var(--ax-on-accent);
+
+  --color-danger: var(--ax-danger);
+  --color-danger-bg: var(--ax-danger-bg);
+  --color-danger-fg: var(--ax-danger-fg);
+  --color-success: var(--ax-success);
+  --color-success-bg: var(--ax-success-bg);
+  --color-success-fg: var(--ax-success-fg);
+  --color-warning: var(--ax-warning);
+  --color-warning-bg: var(--ax-warning-bg);
+  --color-warning-fg: var(--ax-warning-fg);
+  --color-info: var(--ax-info);
+  --color-info-bg: var(--ax-info-bg);
+  --color-info-fg: var(--ax-info-fg);
+
+  --color-hue-gray-bg: var(--ax-hue-gray-bg);
+  --color-hue-gray-fg: var(--ax-hue-gray-fg);
+  --color-hue-red-bg: var(--ax-hue-red-bg);
+  --color-hue-red-fg: var(--ax-hue-red-fg);
+  --color-hue-orange-bg: var(--ax-hue-orange-bg);
+  --color-hue-orange-fg: var(--ax-hue-orange-fg);
+  --color-hue-yellow-bg: var(--ax-hue-yellow-bg);
+  --color-hue-yellow-fg: var(--ax-hue-yellow-fg);
+  --color-hue-green-bg: var(--ax-hue-green-bg);
+  --color-hue-green-fg: var(--ax-hue-green-fg);
+  --color-hue-teal-bg: var(--ax-hue-teal-bg);
+  --color-hue-teal-fg: var(--ax-hue-teal-fg);
+  --color-hue-cyan-bg: var(--ax-hue-cyan-bg);
+  --color-hue-cyan-fg: var(--ax-hue-cyan-fg);
+  --color-hue-blue-bg: var(--ax-hue-blue-bg);
+  --color-hue-blue-fg: var(--ax-hue-blue-fg);
+  --color-hue-purple-bg: var(--ax-hue-purple-bg);
+  --color-hue-purple-fg: var(--ax-hue-purple-fg);
+  --color-hue-pink-bg: var(--ax-hue-pink-bg);
+  --color-hue-pink-fg: var(--ax-hue-pink-fg);
+
+  --radius-inner: var(--ax-radius-inner);
+  --radius-element: var(--ax-radius-element);
+  --radius-container: var(--ax-radius-container);
+  --radius-page: var(--ax-radius-page);
+
+  --shadow-pop: var(--ax-shadow-pop);
+  --shadow-med: var(--ax-shadow-med);
+  --shadow-high: var(--ax-shadow-high);
+
+  --ease-standard: var(--ax-ease-standard);
+  --ease-exit: var(--ax-ease-exit);
+
+  /* 14/15 是 UI 与正文的分界：表格、控件用 14，正文用 15 */
+  --text-2xs: 10px;
+  --text-2xs--line-height: 14px;
+  --text-xs: 12px;
+  --text-xs--line-height: 18px;
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-base: 14px;
+  --text-base--line-height: 20px;
+  --text-md: 15px;
+  --text-md--line-height: 22px;
+  --text-lg: 17px;
+  --text-lg--line-height: 24px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 29px;
+  --text-3xl--line-height: 36px;
+  --text-4xl: 42px;
+  --text-4xl--line-height: 52px;
+
+  --animate-layer-in: ax-layer-in var(--ax-dur-fast-max) var(--ax-ease-standard) both;
+  --animate-layer-out: ax-layer-out var(--ax-dur-fast) var(--ax-ease-exit) both;
+  --animate-fade-in: ax-fade-in var(--ax-dur-fast) var(--ax-ease-standard) both;
+  --animate-dialog-in: ax-dialog-in var(--ax-dur-medium-max) var(--ax-ease-standard) both;
+  --animate-dialog-out: ax-dialog-out var(--ax-dur-fast) var(--ax-ease-exit) both;
+  --animate-sheet-in: ax-sheet-in var(--ax-dur-medium) var(--ax-ease-standard) both;
+  --animate-toast-in: ax-toast-in var(--ax-dur-fast) var(--ax-ease-standard) both;
+  --animate-spin-arc: ax-spin-arc var(--ax-dur-spin) linear infinite;
+  --animate-breathe: ax-breathe var(--ax-dur-medium-max) steps(10, end) infinite alternate;
+}
+
+/* --------------------------------------------------------------- 关键帧 */
+
+@keyframes ax-layer-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ax-layer-y, -8px)) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes ax-layer-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--ax-layer-y, -4px)) scale(0.98);
+  }
+}
+@keyframes ax-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* 弹窗：Astryx 是 scale(.95) + 16px 的「落位」，不是 scale(.2) 的「弹出」 */
+@keyframes ax-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ax-dialog-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+@keyframes ax-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes ax-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ax-toast-y, -8px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ax-spin-arc {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes ax-breathe {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+/* ------------------------------------------------------------- 3) Base */
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--ax-bg);
+    color: var(--ax-fg);
+    font-family: var(--ax-font);
+    font-size: 15px;
+    line-height: 1.47;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    transition: background-color var(--ax-dur-medium) var(--ax-ease-standard);
+  }
+
+  /* 只有一个光标语言：文字类控件不出环，其余出 2px ink 环 */
+  :where(button, [role='button'], a, input, textarea, select, [tabindex]):focus {
+    outline: none;
+  }
+
+  ::selection {
+    background: var(--ax-selection);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ax-line-strong) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--ax-line-strong);
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  :where(h1, h2, h3, h4, h5) {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* -------------------------------------------------------- 4) 组件级修正 */
+
+@layer components {
+  /* ---- 按压：叠一层 10% 实色，松开 125ms ease-exit 淡掉 ----
+   * 用可插值的注册属性而不是 opacity，因为叠层是 background-image，
+   * 动 opacity 会连底色一起淡。 */
+  @property --ax-press-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  .ax-press {
+    --ax-press-color: transparent;
+    background-image: linear-gradient(var(--ax-press-color), var(--ax-press-color));
+    transition:
+      background-color var(--ax-dur-fast) var(--ax-ease-standard),
+      border-color var(--ax-dur-fast) var(--ax-ease-standard),
+      color var(--ax-dur-fast) var(--ax-ease-standard),
+      box-shadow var(--ax-dur-fast) var(--ax-ease-standard),
+      outline-color var(--ax-dur-fast) var(--ax-ease-standard),
+      --ax-press-color var(--ax-dur-fast) var(--ax-ease-exit);
+  }
+  .ax-press:not(:disabled):not([data-disabled='true']):active {
+    --ax-press-color: var(--ax-press);
+    transition-duration: 0s;
+  }
+
+  /* ---- 焦点语言 A：非文本控件，2px 实线环 + 3px 外扩 ---- */
+  .ax-focus:focus-visible {
+    outline: 2px solid var(--ax-accent);
+    outline-offset: 3px;
+  }
+  /* 会被滚动容器或相邻行裁掉时往内收 */
+  .ax-focus-inset:focus-visible {
+    outline: 2px solid var(--ax-accent);
+    outline-offset: -2px;
+    border-radius: inherit;
+  }
+
+  /* ---- 焦点语言 B：文本类控件，描边转 ink + 内侧 2px 8% 暗层，不出环 ---- */
+  .ax-field {    background: var(--ax-surface);
+    border: 1px solid var(--ax-line-strong);
+    border-radius: var(--ax-radius-element);
+    transition:
+      border-color var(--ax-dur-fast) var(--ax-ease-standard),
+      box-shadow var(--ax-dur-fast) var(--ax-ease-standard),
+      background-color var(--ax-dur-fast) var(--ax-ease-standard);
+  }
+  .ax-field:hover {
+    border-color: var(--ax-fg-tertiary);
+  }
+  .ax-field:focus-within,
+  .ax-field[data-focused='true'] {
+    outline: none;
+    border-color: var(--ax-accent);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ax-accent) 8%, transparent);
+  }
+  .ax-field[data-invalid='true'] {
+    border-color: var(--ax-danger);
+  }
+  .ax-field[data-invalid='true']:focus-within {
+    border-color: var(--ax-danger);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ax-danger) 10%, transparent);
+  }
+  .ax-field[data-disabled='true'] {
+    background: var(--ax-muted-soft);
+    color: var(--ax-fg-disabled);
+    cursor: not-allowed;
+  }
+  /* 组合控件内部的 input 不再自己出环，否则内外两道 */
+  .ax-field :where(input, textarea) {
+    outline: none !important;
+  }
+  .ax-field :where(input, textarea)::placeholder {
+    color: var(--ax-fg-disabled);
+  }
+
+  /* ---- 浮层：影 + 描边，圆角 container ---- */
+  .ax-popover {
+    background: var(--ax-surface);
+    border: 1px solid var(--ax-line);
+    border-radius: var(--ax-radius-container);
+    box-shadow: var(--ax-shadow-med);
+  }
+  /* Popover / Tooltip 没有描边，边界全交给阴影（Astryx 真站就是 border: 0） */
+  .ax-popover-soft {
+    background: var(--ax-surface);
+    border: 0;
+    border-radius: var(--ax-radius-container);
+    box-shadow: var(--ax-shadow-pop);
+  }
+
+  /* ---- 遮罩 ---- */
+  .ax-scrim {
+    /* 只有一层实色遮罩：模糊在低端机上贵，而且会把关键内容糊掉 */
+    background: var(--ax-mask);
+  }
+
+  /* ---- 链接：下划线而不是品牌蓝 ---- */
+  .ax-link {
+    color: var(--ax-fg);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--ax-line-strong);
+    transition: text-decoration-color var(--ax-dur-fast) var(--ax-ease-standard);
+  }
+  .ax-link:hover {
+    text-decoration-color: var(--ax-fg);
+  }
+
+  /* ---- 旋转指示器：单段 135° 弧，525ms/圈 ---- */
+  .ax-spinner {
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    background: conic-gradient(from 0turn, currentColor 0 37.5%, transparent 37.5%);
+    -webkit-mask: radial-gradient(
+      farthest-side,
+      transparent calc(100% - 2px),
+      #000 calc(100% - 2px)
+    );
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+    animation: ax-spin-arc var(--ax-dur-spin) linear infinite;
+  }
+
+  /* ---- 骨架屏呼吸 ---- */
+  .ax-skeleton {
+    background: var(--ax-skeleton);
+    border-radius: var(--ax-radius-inner);
+  }
+}
+
+/* =========================================================================
+   紧凑组合（Button.Group / Space.Compact）
+   --------------------------------------------------------------------------
+   Tailwind v4 的 @layer 顺序是 theme → base → components → utilities，
+   而按钮自己带 rounded-element（utilities 层），所以合并圆角必须写在层外，
+   否则会被 utilities 覆盖回 10px。
+   ========================================================================= */
+
+/* 按钮没有描边，合并靠「一道 2px 的缝」而不是共用边框：
+   相邻两个同色按钮仍读得出是两颗，外侧圆角 10、内侧收到 6。 */
+.ax-compact {
+  gap: 2px;
+}
+.ax-compact > * {
+  border-start-start-radius: var(--ax-radius-inner);
+  border-start-end-radius: var(--ax-radius-inner);
+  border-end-start-radius: var(--ax-radius-inner);
+  border-end-end-radius: var(--ax-radius-inner);
+}
+.ax-compact > :first-child:not(:only-child) {
+  border-start-start-radius: var(--ax-radius-element);
+  border-end-start-radius: var(--ax-radius-element);
+}
+.ax-compact > :last-child:not(:only-child) {
+  border-start-end-radius: var(--ax-radius-element);
+  border-end-end-radius: var(--ax-radius-element);
+}
+.ax-compact > :only-child {
+  border-radius: var(--ax-radius-element);
+}
