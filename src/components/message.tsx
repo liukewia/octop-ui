@@ -16,6 +16,8 @@ interface NoticeItem {
   key?: string;
   closable?: boolean;
   onClose?: () => void;
+  /** 自定义图标：给了就用它，否则按 type 取默认图标 */
+  icon?: ReactNode;
 }
 
 let items: NoticeItem[] = [];
@@ -75,29 +77,33 @@ function useNotices() {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
+/* 图标 17px：Astryx 的 Toast 里 icon 是 1.7 倍字号（14 × 1.2），
+ * 用 lucide 的 17px 盒子能对齐原始卡片的行盒，不把高度顶到 44。 */
 function NoticeIcon({ type }: { type: NoticeType }) {
-  const className = 'size-4 shrink-0';
-  if (type === 'loading') return <span className="ax-spinner size-4 shrink-0 text-fg-tertiary" />;
+  const className = 'size-[17px] shrink-0';
+  if (type === 'loading') return <span className="ax-spinner size-[17px] shrink-0 text-fg-tertiary" />;
   if (type === 'success') return <CheckCircle2 className={cn(className, 'text-success')} />;
   if (type === 'error') return <XCircle className={cn(className, 'text-danger')} />;
-  if (type === 'warning') return <AlertTriangle className={cn(className, 'text-warning')} />;
+  if (type === 'warning') return <AlertTriangle className={cn(className, 'text-warning-ink')} />;
   return <Info className={cn(className, 'text-info')} />;
 }
 
 function MessageViewport() {
   const list = useNotices().filter((item) => !item.title && !item.description && !item.actions);
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-4 z-[1000] flex flex-col items-center gap-2 px-4">
+    <div className="pointer-events-none fixed inset-x-0 top-5 z-[1000] flex flex-col items-center gap-2 px-4">
       {list.map((item) => (
         <div
           key={item.id}
           role="status"
           className={cn(
+            // Astryx 原始 Toast：白卡、12 圆角、1px 8% 描边，padding 10/16，
+            // 行高 20 → 高度 42。没有配色底、没有图标容器，只有一道极淡的影。
             'pointer-events-auto flex max-w-[min(520px,100%)] animate-toast-in items-center gap-2',
-            'min-h-10 rounded-container border border-line bg-surface px-3.5 py-2 text-base text-fg shadow-med',
+            'rounded-container border border-line bg-surface px-4 py-2.5 text-base text-fg shadow-toast',
           )}
         >
-          <NoticeIcon type={item.type} />
+          {item.icon ?? <NoticeIcon type={item.type} />}
           <span className="min-w-0 flex-1">{item.content}</span>
         </div>
       ))}
@@ -108,19 +114,20 @@ function MessageViewport() {
 function NotificationViewport() {
   const list = useNotices().filter((item) => item.title || item.description || item.actions);
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-4 z-[1000] flex flex-col items-end gap-2 px-4 sm:inset-x-auto sm:end-4 sm:w-[360px]">
+    <div className="pointer-events-none fixed inset-x-0 top-5 z-[1000] flex flex-col items-end gap-2 px-4 sm:inset-x-auto sm:end-4 sm:w-[380px] sm:px-0">
       {list.map((item) => (
         <div
           key={item.id}
           role="status"
-          className="pointer-events-auto w-full animate-toast-in rounded-container border border-line bg-surface p-4 shadow-med"
+          className="pointer-events-auto w-full animate-toast-in rounded-container border border-line bg-surface px-6 py-3 shadow-toast"
         >
           <div className="flex items-start gap-2.5">
-            <NoticeIcon type={item.type} />
+            {item.icon ?? <NoticeIcon type={item.type} />}
             <div className="min-w-0 flex-1">
-              {item.title && <div className="text-base font-semibold text-fg">{item.title}</div>}
+              {/* 原始卡片标题是 17/24、字重 400 —— 靠字号拉层级，不加粗 */}
+              {item.title && <div className="text-lg font-normal text-fg">{item.title}</div>}
               {item.description && (
-                <div className="mt-1 text-sm leading-relaxed text-fg-secondary">{item.description}</div>
+                <div className="mt-0.5 text-base leading-5 text-fg-secondary">{item.description}</div>
               )}
               {item.content}
               {item.actions && <div className="mt-3 flex items-center justify-end gap-2">{item.actions}</div>}
@@ -130,7 +137,7 @@ function NotificationViewport() {
                 type="button"
                 aria-label="关闭"
                 onClick={() => remove(item.id)}
-                className="ax-press -me-1 -mt-1 inline-flex size-6 shrink-0 items-center justify-center rounded-inner text-fg-tertiary hover:bg-muted hover:text-fg"
+                className="ax-press -me-2 -mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-inner text-fg-tertiary hover:bg-muted hover:text-fg"
               >
                 <X className="size-3.5" />
               </button>
@@ -229,6 +236,7 @@ function openNotification(config: NotificationConfig, type: NoticeType = 'info')
     key: config.key,
     closable: config.closable,
     onClose: config.onClose,
+    icon: config.icon,
   });
 }
 

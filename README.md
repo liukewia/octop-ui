@@ -240,6 +240,7 @@ Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Me
 | 按压反馈 | 波纹 / 缩放 | **叠 10% 实色**，松开 125ms 淡出 | 没有波纹的"脏边"，也不位移布局 |
 | `Divider` 标题位置 | `orientation`（v5） | `orientation` 与 `titlePlacement`（v6）都收 | 两代代码都能迁 |
 | `Tabs destroyOnHidden` | 卸载未激活面板 | 默认保留 DOM，`forceMount` + `hidden` | antd 的默认行为，切回来不重挂 |
+| `message` / `notification` | 白卡 + 阴影，图标 14 | **Astryx 原始卡片**：12 圆角、`1px 8%` 描边、`padding 10/16`（通知 `12/24` 宽 380）、正文 14、图标 17、标题 17/400 | 卡片靠描边分层，阴影只做贴地感；小尺寸下不至于糊成一团 |
 
 ### 还没做（按需再补）
 

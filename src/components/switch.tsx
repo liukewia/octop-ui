@@ -75,12 +75,15 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch
       )}
       <SwitchPrimitive.Thumb
         className={cn(
-          // 关 16 / 开 20，Astryx 的滑块会变大
+          // 滑块要在两个端帽里"同心"：端帽圆心离轨道边缘 12px（高度的一半），
+          // 所以滑块的圆心也必须落在 12px 上。轨道 40 高 24 时，20 的滑块要贴边 2px
+          // （left = 40 − 20 − 2 = 18），而不是 left-4 的 16 —— 那会让右缝 4px、上下缝 2px。
+          // 关态 16 的滑块同理：贴边 4px，圆心正好 12。
           'pointer-events-none absolute top-1/2 block -translate-y-1/2 rounded-full bg-surface shadow-none',
           'transition-[left,width,height] duration-[125ms] ease-standard',
           small
             ? 'left-0.5 size-4 data-[state=checked]:left-[calc(100%-18px)] data-[state=checked]:size-4'
-            : 'left-1 size-4 data-[state=checked]:left-4 data-[state=checked]:size-5',
+            : 'left-1 size-4 data-[state=checked]:left-[calc(100%-22px)] data-[state=checked]:size-5',
         )}
       >
         {loading && (
