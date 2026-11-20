@@ -229,7 +229,7 @@ export function DataEntry() {
         </Row>
         <RangePicker value={range} onChange={(v) => setRange(v)} className="!w-full" />
         <Hint>
-          <code>onChange(date, dateString)</code> 与 antd 一致：第一个参数是 dayjs 对象，第二个是格式化字符串。
+          <code>onChange(date, dateString)</code> 两个参数：第一个是 dayjs 对象，第二个是格式化字符串。
         </Hint>
       </Demo>
 
@@ -408,7 +408,7 @@ export function DataEntry() {
           showSearch
         />
         <Hint>
-          <code>onChange(nextKeys, direction, moveKeys)</code> 三个参数与 antd 一致。
+          <code>onChange(nextKeys, direction, moveKeys)</code> 三个参数：新目标列、移动方向、本次移动的键。
         </Hint>
       </Demo>
 

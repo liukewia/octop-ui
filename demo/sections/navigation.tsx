@@ -91,7 +91,7 @@ export function Navigation() {
           </Dropdown>
         </Row>
         <Hint>
-          <code>onClick({'{ key, keyPath, domEvent }'})</code> 与 antd 同签名。
+          <code>onClick({'{ key, keyPath, domEvent }'})</code> 一次给出 key、路径与原始事件。
         </Hint>
       </Demo>
 

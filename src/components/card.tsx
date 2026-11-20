@@ -10,7 +10,7 @@ export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 't
   cover?: React.ReactNode;
   actions?: React.ReactNode[];
   loading?: boolean;
-  /** antd 5.24+ 的 variant，覆盖 bordered */
+  /** 卡片形态（outlined / borderless），优先于 bordered */
   variant?: 'outlined' | 'borderless';
   headStyle?: React.CSSProperties;
   bodyStyle?: React.CSSProperties;

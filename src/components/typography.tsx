@@ -143,7 +143,7 @@ export const Typography = { Title, Text, Paragraph, Link };
 
 export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: 'horizontal' | 'vertical';
-  /** antd v5 叫 orientation；v6 叫 titlePlacement。两个都收。 */
+  /** 标题位置：orientation 与 titlePlacement 两个名字都收 */
   orientation?: 'left' | 'right' | 'center';
   titlePlacement?: 'left' | 'right' | 'center';
   dashed?: boolean;

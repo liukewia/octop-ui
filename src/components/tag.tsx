@@ -14,7 +14,7 @@ export type PresetColor =
   | 'purple'
   | 'pink';
 
-/** antd 的历史色名映射到 Astryx 的十色板（Astryx 只有 10 个色相） */
+/** 常用色名映射到 Astryx 的十色板（Astryx 只有 10 个色相） */
 const COLOR_ALIAS: Record<string, PresetColor> = {
   magenta: 'pink',
   volcano: 'red',
@@ -52,7 +52,7 @@ export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
   onClose?: (e: React.MouseEvent<HTMLElement>) => void;
   bordered?: boolean;
   icon?: React.ReactNode;
-  /** 实心（antd 的 filled）：语义色用纯色底 */
+  /** 实心（filled）：语义色用纯色底 */
   filled?: boolean;
 }
 

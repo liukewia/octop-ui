@@ -18,7 +18,7 @@ export interface InputNumberProps
   max?: number;
   step?: number;
   precision?: number;
-  /** 显示格式化 / 解析（antd 的 formatter / parser） */
+  /** 显示格式化 / 解析（formatter / parser） */
   formatter?: (value: number | string | undefined) => string;
   parser?: (display: string) => number | string;
   prefix?: React.ReactNode;

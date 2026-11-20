@@ -165,7 +165,7 @@ interface RadioButtonProps {
   children: React.ReactNode;
 }
 
-/** antd 的 Radio.Button：分段式胶囊，选中是实心 accent */
+/** Radio.Button：分段式胶囊，选中是实心 accent */
 function RadioButton({ value, disabled, solid, children }: RadioButtonProps) {
   return (
     <RadioGroupPrimitive.Item

@@ -629,6 +629,6 @@ export function TimePicker({
   );
 }
 
-/** antd 的写法：DatePicker.RangePicker / DatePicker.TimePicker 都是同一组导出 */
+/** DatePicker.RangePicker / DatePicker.TimePicker 都在同一组导出里 */
 export const DatePicker = Object.assign(DatePickerRoot, { RangePicker, TimePicker });
 export const DatePickerRange = RangePicker;

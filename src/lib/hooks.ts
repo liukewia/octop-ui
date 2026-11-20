@@ -6,7 +6,7 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
  * 受控 / 非受控双模。
  * - 传了 value 就是受控：只能由 onChange 回去改，内部不落状态；
  * - 传了 defaultValue 就是非受控：内部状态，onChange 同时更新；
- * - 两者都传：受控优先，但 defaultValue 仍然作为首帧兜底（antd 的行为）。
+ * - 两者都传：受控优先，但 defaultValue 仍然作为首帧兜底。
  */
 export function useControllableState<T>(options: {
   value?: T;

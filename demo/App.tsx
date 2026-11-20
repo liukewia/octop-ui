@@ -166,20 +166,20 @@ export default function App() {
             <div className="mx-auto max-w-[912px]">
               <header className="mb-16">
                 <h1 className="m-0 mb-3 text-4xl font-semibold tracking-[-0.01em] text-fg max-md:text-3xl">
-                  把 antd 的 API，换成 C 端的皮肤
+                  把熟悉的组件 API，换成 C 端的皮肤
                 </h1>
                 <p className="mb-5 flex flex-wrap items-center gap-2 text-xs text-fg-tertiary">
-                  <code className="font-mono text-xs">antd 6.7 API 基线</code>
+                  <code className="font-mono text-xs">55 个组件 · 10.4k 行</code>
                   <span>·</span>
                   <code className="font-mono text-xs">Radix + Tailwind v4 + CVA</code>
                   <span>·</span>
                   <span>零运行时主题 / 一根 import</span>
                 </p>
                 <p className="mb-6 max-w-[720px] text-lg text-fg-tertiary">
-                  对外保留 <strong className="font-medium text-fg">Button type="primary"</strong>、
+                  对外是 <strong className="font-medium text-fg">Button type="primary"</strong>、
                   <strong className="font-medium text-fg">Select options</strong>、
                   <strong className="font-medium text-fg">Modal open</strong>{' '}
-                  这些熟悉的调用方式；对内统一令牌、焦点、按压与浮层动效。旧项目换掉 import 就能迁移。
+                  这类熟手写法；对内统一令牌、焦点、按压与浮层动效，换掉 import 就能用。
                 </p>
                 <div className="mb-4 inline-block max-w-full overflow-x-auto rounded-container bg-canvas px-3 py-2 font-mono text-xs leading-[1.67] whitespace-pre text-fg-tertiary">
                   {`import { Button } from '@octop/ui';

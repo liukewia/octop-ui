@@ -1,7 +1,7 @@
 # @octop/ui
 
 一套面向 **C 端** 的 React 组件库：底层是 shadcn/ui 的做法（Radix Primitives + Tailwind v4 + CVA），
-**对外仍然是 antd 的调用方式**。旧项目把 `import` 换掉、引一次 CSS，就能跑起来。
+皮肤是 Astryx 的十色板与四层令牌。55 个组件共用同一套高度、焦点、按压与浮层时钟，引一次 CSS 就能跑起来。
 
 ```tsx
 import { Button, Select, Modal } from '@octop/ui';
@@ -12,7 +12,7 @@ import '@octop/ui/style.css';
 <Modal open={open} title="编辑" onOk={save} onCancel={close}>…</Modal>
 ```
 
-- **API 基线**：antd 6.7（`items` 形态的 Tabs / Collapse / Menu / Steps / Descriptions、`destroyOnHidden`、`Divider titlePlacement`、`Button iconPosition`、`Modal.xxx` 命令式 API）
+- **API 形态**：数据驱动的 `items`（Tabs / Collapse / Menu / Steps / Descriptions）、`destroyOnHidden`、`Divider titlePlacement`、`Button iconPosition`、`Modal.xxx` 命令式 API
 - **组件**：55 个文件、约 10.4k 行实现，零运行时主题
 - **产物**：`dist/index.js`（~240KB / gzip 58KB）、`dist/octop-ui.css`（~63KB / gzip 12KB）、完整 `.d.ts`
 - **React**：`^18.2 || ^19`，声明为 peer dependency，不打包进产物
@@ -21,19 +21,19 @@ import '@octop/ui/style.css';
 
 ![展厅首屏](docs/demo-light.png)
 
-> 展厅（`npm run dev`）按 antd 的分类把 55 个组件铺开，浅色 / 深色 / 390px 窄屏都能直接看。
+> 展厅（`npm run dev`）按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 六组把 55 个组件铺开，浅色 / 深色 / 390px 窄屏都能直接看。
 > 每次 push 到 `main`，`.github/workflows/pages.yml` 会构建并发布到 GitHub Pages。
 
 ---
 
-## 为什么不是 "再包一层 antd"
+## 为什么不用现成的组件库
 
-| | 包一层 antd | 本仓库 |
+| | 运行时样式型组件库 | 本仓库 |
 | --- | --- | --- |
-| 主题 | 靠 `ConfigProvider` 的 token 覆盖，改不到结构 | 令牌 + `@layer` 组合，结构本身就是设计 |
-| 包体 | antd 全量 cssinjs 运行时 | 预编译 CSS，没有运行时样式计算 |
-| 交互 | antd 的动效时钟与升降级 API | 我们自己的时钟（95→525ms 七档）与形态 |
-| 依赖 | antd + rc-* 一大串 | Radix 一组 + cva/clsx/tailwind-merge |
+| 主题 | 靠 Provider 覆盖 token，改不到结构 | 令牌 + `@layer` 组合，结构本身就是设计 |
+| 包体 | 全量 cssinjs 运行时 | 预编译 CSS，没有运行时样式计算 |
+| 交互 | 库自带的动效时钟与形态，想改要绕开它 | 我们自己的时钟（95→525ms 七档）与形态 |
+| 依赖 | 组件库本体 + 一长串 rc-* 依赖 | Radix 一组 + cva/clsx/tailwind-merge |
 
 代价是要维护 55 个组件；换来的是「视觉与交互完全可控」和「消费方不用装 Tailwind」。
 
@@ -140,18 +140,18 @@ npx shadcn@latest add https://your-host/r/button.json
 
 ---
 
-## 从 antd 迁移
+## 组件约定
 
 ```diff
-- import { Button, Select, Modal, message } from 'antd';
-- import 'antd/dist/reset.css';
+- import { Button, Select, Modal, message } from 'your-legacy-ui';
+- import 'your-legacy-ui/reset.css';
 + import { Button, Select, Modal, message } from '@octop/ui';
 + import '@octop/ui/style.css';
 ```
 
-绝大多数场景到此为止。下面这些点需要过一遍：
+换 import 就到位了。下面四条约定需要过一遍：
 
-### 1. 回调参数：按 antd 的形状给
+### 1. 回调参数带上上下文
 
 ```tsx
 // Select：第二个参数是 option
@@ -192,7 +192,7 @@ onSearch={(value, event, { source }) => {}}
 
 ### 4. TypeScript
 
-类型是手写的，不依赖 antd 的类型包。常用的都直接导出：
+类型是手写的，不依赖第三方类型包。常用的都直接导出：
 
 ```tsx
 import type {
@@ -208,9 +208,9 @@ import type {
 
 ---
 
-## API 兼容度
+## API 一览
 
-### 完全对齐（同签名、同语义）
+### 组件与主要 Props
 
 Button（type/size/shape/block/danger/ghost/loading/icon/iconPosition/htmlType/href）、
 Space（含 `Space.Compact`）、Flex、Typography（Text/Paragraph/Title/Link）、Divider（`orientation` 与 `titlePlacement` 都收）、
@@ -225,11 +225,11 @@ Drawer/DrawerFooter、Popconfirm、Progress、Spin、Result、Tour、
 Menu/Dropdown、Tabs、Breadcrumb、Steps、Pagination、Anchor、FloatButton（含 `.Group`/`.BackTop`）、
 Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Meta、ConfigProvider。
 
-### 刻意不一样的地方
+### 与常见做法的选择差异
 
-| 项 | antd | 这里 | 为什么 |
+| 项 | 常见做法 | 这里 | 为什么 |
 | --- | --- | --- | --- |
-| `Button type="dashed"` | 虚线描边 | **降级为次级填充**（无虚线） | Astryx 没有虚线形态，但 API 保留，旧代码不报错 |
+| `Button type="dashed"` | 虚线描边 | **降级为次级填充**（无虚线） | Astryx 没有虚线形态，但参数保留，旧写法不报错 |
 | `Tooltip` | 有箭头、深色底 | **无箭头**，反相墨色底（深色模式下自动反相） | 箭头在 12px 圆角上会显得脏 |
 | `Segmented` | 指示块瞬间切换 | **225ms 滑动落位**，宽度用 ResizeObserver 量 | 分段是"选择"，位移能表达状态迁移 |
 | `Tabs` 墨条 | 200ms 淡入淡出 | **165ms 跟随**（left/width 过渡） | 阅读连续性 |
@@ -238,8 +238,8 @@ Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Me
 | 危险按钮 | 红描边 / 红底白字 | **柔红底 + 同族深字** | 降低视觉噪音，仍可识别 |
 | `Link` | 品牌蓝 | **文字 + 下划线** | 蓝色在 C 端容易被误认成主按钮 |
 | 按压反馈 | 波纹 / 缩放 | **叠 10% 实色**，松开 125ms 淡出 | 没有波纹的"脏边"，也不位移布局 |
-| `Divider` 标题位置 | `orientation`（v5） | `orientation` 与 `titlePlacement`（v6）都收 | 两代代码都能迁 |
-| `Tabs destroyOnHidden` | 卸载未激活面板 | 默认保留 DOM，`forceMount` + `hidden` | antd 的默认行为，切回来不重挂 |
+| `Divider` 标题位置 | 只收 `orientation` 一个名字 | `orientation` 与 `titlePlacement` 都收 | 两种写法都不必改 |
+| `Tabs destroyOnHidden` | 默认卸载未激活面板 | 默认保留 DOM，`forceMount` + `hidden` | 切回来不重挂，滚动位置与表单状态都在 |
 | `message` / `notification` | 白卡 + 阴影，图标 14 | **Astryx 原始卡片**：12 圆角、`1px 8%` 描边、`padding 10/16`（通知 `12/24` 宽 380）、正文 14、图标 17、标题 17/400 | 卡片靠描边分层，阴影只做贴地感；小尺寸下不至于糊成一团 |
 
 ### 还没做（按需再补）

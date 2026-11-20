@@ -144,7 +144,7 @@ export function DataDisplay() {
         />
         <Hint>
           排序三态、筛选弹层、行选择与展开都是自研的；<code>onChange(pagination, filters, sorter)</code>
-          与 antd 同签名。
+          一次给出三份状态。
         </Hint>
       </Demo>
 
@@ -204,7 +204,7 @@ export function DataDisplay() {
         <List
           bordered
           dataSource={[
-            { title: '把 antd 迁到 Octop', desc: '换 import + 引一次 CSS', avatar: '林' },
+            { title: '换掉 import 就能用', desc: '调用方式不用改', avatar: '林' },
             { title: '补齐 55 个组件', desc: '表单、表格、日期都自研', avatar: '周' },
             { title: '按 C 端调控件高度', desc: '粗指针设备自动到 44', avatar: '陈' },
           ]}

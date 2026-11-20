@@ -10,7 +10,7 @@ export interface ConfigProviderTheme {
 
 export interface ConfigProviderProps {
   theme?: ConfigProviderTheme;
-  /** 与 antd 保持同名；这里只用于文案方向 */
+  /** 文案与图标的书写方向 */
   direction?: 'ltr' | 'rtl';
   componentSize?: 'small' | 'middle' | 'large';
   locale?: unknown;

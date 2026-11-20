@@ -15,7 +15,7 @@ export function omitUndefined<T extends Record<string, unknown>>(obj: T): T {
   return next;
 }
 
-/** antd 的 validateStatus → 我们的 data-invalid */
+/** validateStatus → data-invalid */
 export function statusToInvalid(status?: 'error' | 'warning' | 'success' | '') {
   return status === 'error';
 }

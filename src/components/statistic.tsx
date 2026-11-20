@@ -69,7 +69,7 @@ export interface CountdownProps extends Omit<StatisticProps, 'value'> {
   onFinish?: () => void;
 }
 
-/** antd 的 Statistic.Countdown：只做展示层，值仍由调用方传入 */
+/** Statistic.Countdown：只做展示层，值仍由调用方传入 */
 export const Countdown = forwardRef<HTMLDivElement, CountdownProps>(function Countdown(
   { value = 0, format = 'HH:mm:ss', title, onFinish, ...rest },
   ref,

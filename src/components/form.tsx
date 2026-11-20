@@ -389,7 +389,7 @@ export interface FormItemProps {
   help?: ReactNode;
   validateStatus?: 'success' | 'warning' | 'error' | 'validating';
   validateTrigger?: string | string[];
-  /** 受控属性名，默认 value；Checkbox / Switch 用 checked（antd 同名 API） */
+  /** 受控属性名，默认 value；Checkbox / Switch 用 checked */
   valuePropName?: string;
   getValueFromEvent?: (...args: unknown[]) => unknown;
   normalize?: (value: unknown, prevValue: unknown, allValues: Record<string, unknown>) => unknown;

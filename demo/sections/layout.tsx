@@ -25,7 +25,7 @@ export function LayoutSection() {
       id="layout"
       title="布局"
       api="Layout / Row Col / Splitter / Card"
-      desc="栅格保留 antd 的 24 栏与响应式断点；布局容器只负责分区，不携带主题，嵌套时不会重复描边。"
+      desc="栅格是 24 栏与响应式断点；布局容器只负责分区，不携带主题，嵌套时不会重复描边。"
     >
       <Demo label="Layout" code="Header / Sider / Content" span="full" dir="block">
         <Layout className="w-full overflow-hidden rounded-container border border-line">

@@ -180,7 +180,7 @@ export function Tabs({
 
       <div className={cn('min-w-0 flex-1', vertical ? 'ps-4' : 'pt-3')}>
         {items.map((item) => {
-          // antd 默认保留未激活面板的 DOM；destroyOnHidden 时才真正卸载。
+          // 默认保留未激活面板的 DOM；destroyOnHidden 时才真正卸载。
           // forceMount 之后 Radix 不再自己加 hidden，得我们补上，否则未激活面板会堆着显示。
           const keepMounted =
             !(destroyOnHidden || destroyInactiveTabPane) || Boolean(item.forceRender);

@@ -163,8 +163,7 @@ export function General() {
           <Text delete>删除线</Text> 与 <Text keyboard>⌘K</Text>。
         </Paragraph>
         <Paragraph type="secondary" className="!mb-0" ellipsis={{ rows: 2 }}>
-          两行截断：Ant Design 的
-          ellipsis 在 v6 支持行数配置，这里用 line-clamp 实现，不测量 DOM，也没有 ResizeObserver 抖动。
+          两行截断：ellipsis 收行数配置，用 line-clamp 实现，不测量 DOM，也没有 ResizeObserver 抖动。
           再补一点文字让它真的到第三行，才能看出截断效果。
         </Paragraph>
       </Demo>
@@ -183,14 +182,14 @@ export function General() {
             禁用链接
           </Link>
           <Text type="secondary">
-            antd 的链接默认蓝色，这里刻意改成「文字 + 下划线」：C 端页面里蓝色太容易被当成主按钮。
+            链接不涂品牌蓝，刻意用「文字 + 下划线」：C 端页面里蓝色太容易被当成主按钮。
           </Text>
         </Stack>
       </Demo>
 
       <Demo label="分割线" code="Divider titlePlacement" span="full" dir="column">
-        <Divider titlePlacement="left">左对齐（v6 新名）</Divider>
-        <Divider orientation="center">居中（v5 旧名，也收）</Divider>
+        <Divider titlePlacement="left">左对齐（titlePlacement）</Divider>
+        <Divider orientation="center">居中（orientation 也收）</Divider>
         <Divider dashed>虚线</Divider>
         <Row>
           <Text>文字</Text>

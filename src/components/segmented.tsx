@@ -24,7 +24,7 @@ export interface SegmentedProps<ValueType = string | number> {
 
 /**
  * Astryx 的分段控件：灰槽（p4 / r10 / 40h）+ 滑块（24~32h / r6），
- * 滑块移动 225ms standard —— 比 antd 的 300ms easeInOut 更「落位」，
+ * 滑块移动 225ms standard —— 比 300ms easeInOut 更「落位」，
  * 桌面没有拖动透镜，用一次性落位最接近真站。
  */
 export const Segmented = forwardRef<HTMLDivElement, SegmentedProps>(function Segmented(

@@ -26,7 +26,7 @@ export interface SpaceProps extends React.HTMLAttributes<HTMLDivElement> {
   justify?: 'start' | 'end' | 'center' | 'space-between' | 'space-around';
   wrap?: boolean;
   split?: React.ReactNode;
-  /** 子项是否撑满（antd 的 fill） */
+  /** 子项是否撑满 */
   fill?: boolean;
 }
 
@@ -100,7 +100,7 @@ const SpaceImpl = forwardRef<HTMLDivElement, SpaceProps>(function Space(
 });
 
 /**
- * antd 的 `Space.Compact`：把相邻控件拼成一个整体 —— 只保留两端圆角，
+ * `Space.Compact`：把相邻控件拼成一个整体 —— 只保留两端圆角，
  * 中间共用一条 1px 描边。用自己的 CSS 变量实现，不与具体组件耦合。
  */
 const Compact = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(

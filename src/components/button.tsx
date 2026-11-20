@@ -71,7 +71,7 @@ const button = cva(
 
 export interface ButtonProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type' | 'color'> {
-  /** antd 的按钮类型。dashed 会降级为次级填充（Astryx 没有虚线形态） */
+  /** 按钮类型。dashed 会降级为次级填充（Astryx 没有虚线形态） */
   type?: ButtonType;
   size?: ButtonSize;
   shape?: ButtonShape;
@@ -84,7 +84,7 @@ export interface ButtonProps
   block?: boolean;
   href?: string;
   target?: string;
-  /** 原生 button 的 type，antd 同名 API */
+  /** 原生 button 的 type */
   htmlType?: 'button' | 'submit' | 'reset';
   children?: React.ReactNode;
 }
@@ -176,7 +176,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 });
 
 /**
- * antd 的 `Button.Group`。视觉上等价于 Space.Compact：相邻按钮共用一条边，
+ * `Button.Group`。视觉上等价于 Space.Compact：相邻按钮共用一条边，
  * 只有两端保留圆角。真正的合并逻辑在 Space.Compact 的 CSS 里。
  */
 export const ButtonGroup = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
