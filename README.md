@@ -22,8 +22,23 @@ import '@octop/ui/style.css';
 
 ![展厅首屏](docs/demo-light.png)
 
-> 展厅（`npm run dev`）按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开，浅色 / 深色 / 390px 窄屏都能直接看。
+> 展厅（`npm run dev`）顶栏分 **组件** 与 **场景** 两个视图：组件视图按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开；场景视图把同一套组件拼成 6 个真实页面。两个视图都验过浅色 / 深色 / 390px 窄屏。
 > 每次 push 到 `main`，`.github/workflows/pages.yml` 会构建并发布到 GitHub Pages。
+
+场景视图用 `?view=scenes&scene=<id>` 定位，可以直接把某一块发给同事：
+
+| 场景 | 看点 | 主要组件 |
+| --- | --- | --- |
+| `dashboard` 增长看板 | 指标卡与表格的密度、数字对齐 | Statistic / Segmented / Progress / Table |
+| `inbox` 消息中心 | 左列表右详情、未读态与空状态 | Input / Segmented / Badge / Avatar / Empty |
+| `settings` 账号设置 | Tab 分栏、开关清单、危险操作确认 | Tabs / Select / Switch / Modal / Alert |
+| `checkout` 下单结算 | 步骤、数量增减、优惠抵扣、二次确认 | Steps / RadioGroup / InputNumber / Result |
+| `assistant` AI 助手 | 气泡、引用上标、来源列表、代码块 | ChatMessage / ChatComposer / Citation / CodeBlock |
+| `mobile` 移动端 | 390 宽下的触控尺寸与底部抽屉 | BottomSheet / CheckableTag / InputNumber |
+
+这些页面全部写在 `demo/scenes/` 里，只消费 `src/` 的导出，库本身没有为它们加过一个类名。
+
+![场景示例](docs/demo-scenes.png)
 
 ---
 
