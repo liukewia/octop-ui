@@ -134,6 +134,7 @@ function BugReportForm() {
 
   function onSubmit(values: BugValues) {
     message.success(`已提交：${values.title}`);
+    form.reset(values); // 清掉 isDirty，内容留在框里
     // eslint-disable-next-line no-console
     console.log(values);
   }
