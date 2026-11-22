@@ -594,3 +594,326 @@
 .ax-compact > :only-child {
   border-radius: var(--ax-radius-element);
 }
+
+/* =========================================================================
+   Utilities · scroll-fade
+   --------------------------------------------------------------------------
+   遮罩式边缘渐隐：渐变写在 mask 上，所以淡掉的是内容本身，任何背景都成立。
+   滚动位置由 CSS 滚动驱动动画（animation-timeline: scroll()）驱动四个
+   「当前深度」变量，不挂滚动监听、不写 JS。
+
+   · 静止：起始边清晰、结束边渐隐（暗示下面还有）
+   · 滚动中：起始边渐显、结束边保持渐隐
+   · 到底：结束边收回到 0，重新变清晰
+   · 不支持滚动驱动动画的浏览器：退回「双边静态渐隐」（基础值即渐隐态）
+   ========================================================================= */
+
+@property --scroll-fade-t-cur {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --scroll-fade-b-cur {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --scroll-fade-s-cur {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --scroll-fade-e-cur {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes ax-fade-t {
+  from {
+    --scroll-fade-t-cur: 0px;
+  }
+  to {
+    --scroll-fade-t-cur: var(--scroll-fade-t-size, var(--scroll-fade-size, min(12%, 40px)));
+  }
+}
+@keyframes ax-fade-b {
+  from {
+    --scroll-fade-b-cur: var(--scroll-fade-b-size, var(--scroll-fade-size, min(12%, 40px)));
+  }
+  to {
+    --scroll-fade-b-cur: 0px;
+  }
+}
+@keyframes ax-fade-s {
+  from {
+    --scroll-fade-s-cur: 0px;
+  }
+  to {
+    --scroll-fade-s-cur: var(--scroll-fade-s-size, var(--scroll-fade-size, min(12%, 40px)));
+  }
+}
+@keyframes ax-fade-e {
+  from {
+    --scroll-fade-e-cur: var(--scroll-fade-e-size, var(--scroll-fade-size, min(12%, 40px)));
+  }
+  to {
+    --scroll-fade-e-cur: 0px;
+  }
+}
+
+/* 纵向：上下两边 */
+@utility scroll-fade {
+  --scroll-fade-t-cur: var(--scroll-fade-t-size, var(--scroll-fade-size, min(12%, 40px)));
+  --scroll-fade-b-cur: var(--scroll-fade-b-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent, #000 var(--scroll-fade-t-cur)),
+    linear-gradient(to top, transparent, #000 var(--scroll-fade-b-cur));
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent, #000 var(--scroll-fade-t-cur)),
+    linear-gradient(to top, transparent, #000 var(--scroll-fade-b-cur));
+  mask-composite: intersect;
+}
+@utility scroll-fade-y {
+  --scroll-fade-t-cur: var(--scroll-fade-t-size, var(--scroll-fade-size, min(12%, 40px)));
+  --scroll-fade-b-cur: var(--scroll-fade-b-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent, #000 var(--scroll-fade-t-cur)),
+    linear-gradient(to top, transparent, #000 var(--scroll-fade-b-cur));
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent, #000 var(--scroll-fade-t-cur)),
+    linear-gradient(to top, transparent, #000 var(--scroll-fade-b-cur));
+  mask-composite: intersect;
+}
+
+/* 横向：行内两边（RTL 自动镜像） */
+@utility scroll-fade-x {
+  --scroll-fade-s-cur: var(--scroll-fade-s-size, var(--scroll-fade-size, min(12%, 40px)));
+  --scroll-fade-e-cur: var(--scroll-fade-e-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 var(--scroll-fade-s-cur)),
+    linear-gradient(to left, transparent, #000 var(--scroll-fade-e-cur));
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 var(--scroll-fade-s-cur)),
+    linear-gradient(to left, transparent, #000 var(--scroll-fade-e-cur));
+  mask-composite: intersect;
+}
+
+/* 单边 */
+@utility scroll-fade-t {
+  --scroll-fade-t-cur: var(--scroll-fade-t-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--scroll-fade-t-cur));
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--scroll-fade-t-cur));
+}
+@utility scroll-fade-b {
+  --scroll-fade-b-cur: var(--scroll-fade-b-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image: linear-gradient(to top, transparent, #000 var(--scroll-fade-b-cur));
+  mask-image: linear-gradient(to top, transparent, #000 var(--scroll-fade-b-cur));
+}
+@utility scroll-fade-l {
+  --scroll-fade-s-cur: var(--scroll-fade-s-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-s-cur));
+  mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-s-cur));
+}
+@utility scroll-fade-r {
+  --scroll-fade-e-cur: var(--scroll-fade-e-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 var(--scroll-fade-e-cur));
+  mask-image: linear-gradient(to left, transparent, #000 var(--scroll-fade-e-cur));
+}
+@utility scroll-fade-s {
+  --scroll-fade-s-cur: var(--scroll-fade-s-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-s-cur));
+  mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-s-cur));
+}
+@utility scroll-fade-e {
+  --scroll-fade-e-cur: var(--scroll-fade-e-size, var(--scroll-fade-size, min(12%, 40px)));
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 var(--scroll-fade-e-cur));
+  mask-image: linear-gradient(to left, transparent, #000 var(--scroll-fade-e-cur));
+}
+
+/* 尺寸：scroll-fade-6 = 24px，scroll-fade-[15%] 任意值 */
+@utility scroll-fade-* {
+  --scroll-fade-size: calc(var(--spacing) * --value(integer));
+  --scroll-fade-size: --value([length], [percentage]);
+}
+
+/* 关掉：状态类，直接压掉遮罩与动画（写在层外，任何顺序都生效） */
+.scroll-fade-none {
+  -webkit-mask-image: none;
+  mask-image: none;
+  animation: none;
+}
+
+/* 滚动驱动：只在支持的浏览器上挂动画，其余保持上面的静态渐隐 */
+@supports (animation-timeline: scroll()) {
+  .scroll-fade,
+  .scroll-fade-y,
+  .scroll-fade-x,
+  .scroll-fade-t,
+  .scroll-fade-b,
+  .scroll-fade-l,
+  .scroll-fade-r,
+  .scroll-fade-s,
+  .scroll-fade-e {
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
+  .scroll-fade,
+  .scroll-fade-y {
+    animation-name: ax-fade-t, ax-fade-b;
+    animation-timeline: scroll(self y), scroll(self y);
+    animation-range:
+      0 var(--scroll-fade-reveal, 96px),
+      calc(100% - var(--scroll-fade-reveal, 96px)) 100%;
+  }
+  .scroll-fade-x {
+    animation-name: ax-fade-s, ax-fade-e;
+    animation-timeline: scroll(self inline), scroll(self inline);
+    animation-range:
+      0 var(--scroll-fade-reveal, 96px),
+      calc(100% - var(--scroll-fade-reveal, 96px)) 100%;
+  }
+  .scroll-fade-t {
+    animation-name: ax-fade-t;
+    animation-timeline: scroll(self y);
+    animation-range: 0 var(--scroll-fade-reveal, 96px);
+  }
+  .scroll-fade-b {
+    animation-name: ax-fade-b;
+    animation-timeline: scroll(self y);
+    animation-range: calc(100% - var(--scroll-fade-reveal, 96px)) 100%;
+  }
+  .scroll-fade-s {
+    animation-name: ax-fade-s;
+    animation-timeline: scroll(self inline);
+    animation-range: 0 var(--scroll-fade-reveal, 96px);
+  }
+  .scroll-fade-e {
+    animation-name: ax-fade-e;
+    animation-timeline: scroll(self inline);
+    animation-range: calc(100% - var(--scroll-fade-reveal, 96px)) 100%;
+  }
+  .scroll-fade-l {
+    animation-name: ax-fade-s;
+    animation-timeline: scroll(self x);
+    animation-range: 0 var(--scroll-fade-reveal, 96px);
+  }
+  .scroll-fade-r {
+    animation-name: ax-fade-e;
+    animation-timeline: scroll(self x);
+    animation-range: calc(100% - var(--scroll-fade-reveal, 96px)) 100%;
+  }
+}
+
+/* RTL：行内边的渐变方向跟着阅读方向翻面 */
+:dir(rtl) .scroll-fade-x {
+  -webkit-mask-image:
+    linear-gradient(to left, transparent, #000 var(--scroll-fade-s-cur)),
+    linear-gradient(to right, transparent, #000 var(--scroll-fade-e-cur));
+  mask-image:
+    linear-gradient(to left, transparent, #000 var(--scroll-fade-s-cur)),
+    linear-gradient(to right, transparent, #000 var(--scroll-fade-e-cur));
+}
+:dir(rtl) .scroll-fade-s {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 var(--scroll-fade-s-cur));
+  mask-image: linear-gradient(to left, transparent, #000 var(--scroll-fade-s-cur));
+}
+:dir(rtl) .scroll-fade-e {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-e-cur));
+  mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-e-cur));
+}
+
+/* =========================================================================
+   Utilities · shimmer
+   --------------------------------------------------------------------------
+   一条高光带扫过文字，用来看「正在进行」。纯 CSS：文字用 background-clip: text
+   上色，渐变里高光的位置（--shimmer-x）由 animation 推移。
+   文字本体用 -webkit-text-fill-color 变透明，color 仍是原色，所以
+   currentColor 还能拿来当底色和高光基色。
+
+   · 高光色 = 文字色与白色混合 → 浅色模式变亮、深色模式自动提亮
+   · 高光宽度默认 calc(3ch + 40px)，跟着字号走
+   · prefers-reduced-motion 下直接关掉，文字回到自己的颜色
+   ========================================================================= */
+
+@property --shimmer-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -25%;
+}
+
+@keyframes ax-shimmer {
+  from {
+    --shimmer-x: -25%;
+  }
+  to {
+    --shimmer-x: 125%;
+  }
+}
+
+@utility shimmer {
+  --shimmer-color: color-mix(in oklab, currentColor 40%, white);
+  --shimmer-spread: calc(3ch + 40px);
+  --shimmer-angle: 20deg;
+  --shimmer-duration: 2s;
+  --shimmer-text-fill: transparent;
+  background-image:
+    linear-gradient(
+      var(--shimmer-angle),
+      transparent calc(var(--shimmer-x) - var(--shimmer-spread) / 2),
+      var(--shimmer-color) var(--shimmer-x),
+      transparent calc(var(--shimmer-x) + var(--shimmer-spread) / 2)
+    ),
+    linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: var(--shimmer-text-fill);
+  animation: ax-shimmer var(--shimmer-duration) linear infinite;
+}
+
+@utility shimmer-once {
+  animation-iteration-count: 1;
+}
+
+@utility shimmer-reverse {
+  animation-direction: reverse;
+}
+
+@utility shimmer-duration-* {
+  --shimmer-duration: calc(--value(integer) * 1ms);
+}
+
+@utility shimmer-spread-* {
+  --shimmer-spread: calc(var(--spacing) * --value(integer));
+  --shimmer-spread: --value([length], [percentage]);
+}
+
+@utility shimmer-angle-* {
+  --shimmer-angle: calc(--value(integer) * 1deg);
+}
+
+/* 关掉：状态类，写在层外，任何顺序都生效 */
+.shimmer-none {
+  background-image: none;
+  -webkit-text-fill-color: currentColor;
+  animation: none;
+}
+
+/* 降低动效偏好：不扫光，也不留透明字 */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+    animation: none;
+  }
+}
+
+/* 预编译发布时没有消费方的 Tailwind 扫描，常用的尺寸档位在这里显式生成一份 */
+@source inline(
+  "scroll-fade scroll-fade-y scroll-fade-x scroll-fade-t scroll-fade-b scroll-fade-l scroll-fade-r scroll-fade-s scroll-fade-e scroll-fade-{4,6,8,12,16,24} shimmer shimmer-once shimmer-reverse shimmer-duration-{800,1000,1200} shimmer-spread-{4,8,16,24} shimmer-angle-{0,45,90}"
+);

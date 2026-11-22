@@ -260,6 +260,9 @@ Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Me
 **高级**：CommandPalette、BottomSheet、ChatMessage/ChatComposer/ChatSystemMessage、
 Citation/CitationList、CodeBlock、OverflowList、SelectionToolbar、HoverCard、StatusDot、Kbd。
 
+**工具类**：`scroll-fade`（含 `-x/-y/-t/-b/-l/-r/-s/-e`、尺寸档、`-none`）、
+`shimmer`（含 `-once/-reverse/-none`、`duration/spread/angle` 档）。
+
 ### 与常见做法的选择差异
 
 | 项 | 常见做法 | 这里 | 为什么 |
@@ -422,6 +425,66 @@ const POPUP_MOTION = [
 | HoverCard | `title` / `content` / `openDelay` / `closeDelay` | 悬停卡，鼠标能从触发点移进卡片 |
 | StatusDot | `status` / `text` / `pulse` / `size` / `color` | 状态点，`processing` 自带呼吸环 |
 | Kbd | `keys` / `separator` / `size` | 键帽：1px 描边 + 底部 2px 读厚度 |
+
+---
+
+## 工具类：scroll-fade / shimmer
+
+两个纯 CSS 的 utility（对应 shadcn 的 `shadcn/tailwind.css`），不挂脚本、不写滚动监听。写在
+`src/styles/index.css` 里，跟组件一起进 `octop-ui.css`，消费方不用装 Tailwind。
+
+### scroll-fade
+
+```tsx
+<div className="scroll-fade max-h-[232px] overflow-y-auto">{/* ... */}</div>
+<div className="scroll-fade-x flex gap-2 overflow-x-auto">{/* ... */}</div>
+```
+
+静止时起始边清晰、结束边渐隐；往下滚，起始边渐显、两端同时留雾；到底后结束边收回。
+遮罩写在 `mask-image` 上（`mask-composite: intersect` 拼上下两道渐变），淡掉的是内容本身，
+换背景不用改色。
+
+| class | 作用 |
+| --- | --- |
+| `scroll-fade` / `scroll-fade-y` | 纵向两端 |
+| `scroll-fade-x` | 横向两端，`dir` 变了自动镜像 |
+| `scroll-fade-t` / `-b` | 只淡上 / 下 |
+| `scroll-fade-l` / `-r` | 只淡左 / 右（物理边） |
+| `scroll-fade-s` / `-e` | 只淡行内起 / 止（RTL 镜像） |
+| `scroll-fade-6` / `scroll-fade-[15%]` | 渐隐深度（默认 `min(12%, 40px)`） |
+| `scroll-fade-none` | 关掉，任何顺序都生效 |
+
+深度也可以直接给变量：`--scroll-fade-size`（两边）、`--scroll-fade-b-size`（单边）、
+`--scroll-fade-reveal`（默认 96px，决定「滚多远渐隐到满」）。内容不溢出就不会淡，可以无脑加。
+
+滚动位置靠 CSS 滚动驱动动画（`animation-timeline: scroll(self y)`）驱动四个自定义属性；
+不支持的浏览器退回双边静态渐隐，不报错。
+
+### shimmer
+
+```tsx
+<p className="shimmer text-lg text-fg">正在生成回答…</p>
+```
+
+一条高光带扫过文字，用来表示「正在进行」。纯 CSS：`background-clip: text` + 移动的渐变，
+高光色由 `currentColor` 与白色混合，浅色模式提亮、深色模式自动更亮。
+
+| class | 作用 |
+| --- | --- |
+| `shimmer` | 默认 2s / 20° / `calc(3ch + 40px)` |
+| `shimmer-once` | 只扫一次（配 `key` 重播） |
+| `shimmer-reverse` | 反方向 |
+| `shimmer-duration-1000` | 一次扫光的毫秒数 |
+| `shimmer-spread-8` | 光带宽度（间距刻度） |
+| `shimmer-angle-45` | 光带倾角 |
+| `shimmer-none` | 关掉，任何顺序都生效 |
+
+高光色可以单独给：`style={{ '--shimmer-color': 'var(--ax-accent)' }}`。
+`prefers-reduced-motion: reduce` 下自动停扫、文字回到自己的颜色。
+
+预编译产物里已经带了 `scroll-fade-{4,6,8,12,16,24}`、`shimmer-duration-{800,1000,1200}`、
+`shimmer-spread-{4,8,16,24}`、`shimmer-angle-{0,45,90}` 这几档；其余档位在自己的 Tailwind 里能直接用，
+或给对应 CSS 变量。
 
 ---
 
