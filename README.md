@@ -22,7 +22,7 @@ import '@octop/ui/style.css';
 
 ![展厅首屏](docs/demo-light.png)
 
-> 展厅（`npm run dev`）顶栏分 **组件** 与 **场景** 两个视图：组件视图按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开；场景视图把同一套组件拼成 6 个真实页面。两个视图都验过浅色 / 深色 / 390px 窄屏。
+> 展厅（`npm run dev`）顶栏分 **组件 / 场景 / Agent** 三个视图：组件视图按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开；场景视图拼出 6 个业务页面；Agent 视图再补 5 屏「过程可见」的界面。三个视图都验过浅色 / 深色 / 390px 窄屏。
 > 每次 push 到 `main`，`.github/workflows/pages.yml` 会构建并发布到 GitHub Pages。
 
 场景视图用 `?view=scenes&scene=<id>` 定位，可以直接把某一块发给同事：
@@ -39,6 +39,20 @@ import '@octop/ui/style.css';
 这些页面全部写在 `demo/scenes/` 里，只消费 `src/` 的导出，库本身没有为它们加过一个类名。
 
 ![场景示例](docs/demo-scenes.png)
+
+Agent 视图用 `?view=agent&agent=<id>` 定位。它解决的不是「怎么聊天」，而是「怎么让不确定的过程看得见」：
+
+| 场景 | 看点 | 主要组件 |
+| --- | --- | --- |
+| `trace` 运行轨迹 | 规划 / 检索 / 工具 / 重试 / 审批逐步展开，带耗时与 token | StatusDot / Tabs / CodeBlock / Alert |
+| `approval` 工具审批 | 计划、影响面、回滚脚本摆在一张卡上，二次确认才执行 | Drawer / Descriptions / Collapse / Checkbox |
+| `team` 多 Agent | 主控与三个子 Agent 的分工、预算、交接记录 | Progress / Avatar / Popconfirm / Segmented |
+| `builder` 编排配置 | 提示 / 工具 / 知识库 / 预算，右侧实时算代价 | Input / TextArea / Select / Slider / Switch |
+| `evals` 评测对比 | v3 与 v4 逐条 diff，回归用例单独标红 | Table 展开行 / Statistic / CodeBlock |
+
+这五屏同样只消费 `src/` 的导出；为了让「暂停 / 继续 / 审批 / 终止」都有真实反馈，交互状态全部写在场景组件内部，库代码没有为 demo 增加过 props。
+
+![Agent 场景](docs/demo-agent.png)
 
 ---
 

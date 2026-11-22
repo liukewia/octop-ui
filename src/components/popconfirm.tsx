@@ -47,11 +47,13 @@ export function Popconfirm({
 
   return (
     <PopoverPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
-      <PopoverPrimitive.Anchor asChild>
+      {/* 必须用 Trigger 而不是 Anchor：Anchor 只定位、不响应点击，
+          弹出的确认框永远打不开。 */}
+      <PopoverPrimitive.Trigger asChild>
         <span className="inline-flex" aria-disabled={disabled || undefined}>
           {children}
         </span>
-      </PopoverPrimitive.Anchor>
+      </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
           side={side}

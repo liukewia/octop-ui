@@ -9,6 +9,7 @@ import { Feedback } from './sections/feedback';
 import { Navigation } from './sections/navigation';
 import { Advanced } from './sections/advanced';
 import { Scenes } from './scenes';
+import { AgentScenes } from './scenes/agent';
 import { Moon, Search, Sun } from './icons';
 
 const NAV = [
@@ -32,6 +33,7 @@ const ALL_IDS = NAV.flatMap((g) => g.items.map((i) => i.id));
 const VIEWS = [
   { id: 'components', label: '组件' },
   { id: 'scenes', label: '场景' },
+  { id: 'agent', label: 'Agent' },
 ] as const;
 
 type ViewId = (typeof VIEWS)[number]['id'];
@@ -54,9 +56,10 @@ export default function App() {
   const [mode, setMode] = useState<'light' | 'dark'>(() =>
     new URLSearchParams(window.location.search).get('theme') === 'dark' ? 'dark' : 'light',
   );
-  const [view, setView] = useState<ViewId>(() =>
-    new URLSearchParams(window.location.search).get('view') === 'scenes' ? 'scenes' : 'components',
-  );
+  const [view, setView] = useState<ViewId>(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    return v === 'scenes' || v === 'agent' ? v : 'components';
+  });
   const [active, setActive] = useState('foundations');
   const [query, setQuery] = useState('');
 
@@ -84,13 +87,15 @@ export default function App() {
   const go = (next: ViewId) => {
     setView(next);
     const url = new URL(window.location.href);
-    if (next === 'scenes') {
-      url.searchParams.set('view', 'scenes');
-      url.hash = '';
-    } else {
+    // 每个视图只留自己的参数，避免从场景切到 Agent 后 URL 里挂着上一屏的 scene
+    url.searchParams.delete('scene');
+    url.searchParams.delete('agent');
+    if (next === 'components') {
       url.searchParams.delete('view');
-      url.hash = '';
+    } else {
+      url.searchParams.set('view', next);
     }
+    url.hash = '';
     window.history.replaceState(null, '', url);
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   };
@@ -109,7 +114,7 @@ export default function App() {
       <div className="min-h-screen bg-bg text-fg">
         <header className="sticky top-0 z-50 grid h-12 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-line bg-bg px-2 max-md:gap-2">
           <a
-            className="flex min-w-0 items-center gap-2 px-2 text-base font-semibold text-fg no-underline"
+            className="flex min-w-0 items-center gap-2 px-2 text-sm font-semibold text-fg no-underline sm:text-base"
             href={view === 'components' ? '#foundations' : '#'}
             onClick={(e) => {
               if (view !== 'components') {
@@ -121,7 +126,8 @@ export default function App() {
             <span className="text-accent">
               <Mark />
             </span>
-            <span className="truncate whitespace-nowrap">Octop UI</span>
+            <span className="truncate whitespace-nowrap sm:hidden">Octop</span>
+            <span className="hidden truncate whitespace-nowrap sm:inline">Octop UI</span>
           </a>
 
           <nav aria-label="视图切换" className="flex items-center gap-0.5 rounded-full bg-canvas p-0.5">
@@ -151,13 +157,15 @@ export default function App() {
               </button>
             </Tooltip>
             <span className="ml-1 hidden h-8 items-center rounded-full bg-accent px-3 text-base font-medium whitespace-nowrap text-on-accent sm:inline-flex">
-              v0.2.0
+              v0.2.1
             </span>
           </div>
         </header>
 
         {view === 'scenes' ? (
           <Scenes />
+        ) : view === 'agent' ? (
+          <AgentScenes />
         ) : (
           <div className="flex items-start max-md:block">
             <aside className="sticky top-12 flex h-[calc(100vh-48px)] w-[260px] flex-none flex-col overflow-hidden p-2 max-md:static max-md:h-auto max-md:w-auto max-md:border-b max-md:border-line">
@@ -256,7 +264,14 @@ import '@octop/ui/style.css';`}
                       onClick={() => go('scenes')}
                       className="ax-focus inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-fg underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-fg"
                     >
-                      六个真实场景 →
+                      六个业务场景 →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => go('agent')}
+                      className="ax-focus inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-fg underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-fg"
+                    >
+                      五个 Agent 场景 →
                     </button>
                   </div>
                 </header>
