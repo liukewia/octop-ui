@@ -14,7 +14,7 @@ export type PresetColor =
   | 'purple'
   | 'pink';
 
-/** 常用色名映射到 Astryx 的十色板（Astryx 只有 10 个色相） */
+/** 常用色名映射到十个色相 */
 const COLOR_ALIAS: Record<string, PresetColor> = {
   magenta: 'pink',
   volcano: 'red',
@@ -38,7 +38,7 @@ function resolveColor(color?: string): { bg?: string; fg?: string; border?: stri
       border: 'transparent',
     };
   }
-  // 自定义色：柔色底 + 同色深字，和 Astryx 的 Badge 语法一致
+  // 自定义色：浅色底搭配同色系深色文字
   return {
     bg: `color-mix(in srgb, ${color} 20%, var(--ax-surface))`,
     fg: `color-mix(in srgb, ${color} 78%, var(--ax-fg))`,

@@ -45,6 +45,7 @@ export function Tabs({
   size = 'middle',
   destroyOnHidden,
   destroyInactiveTabPane,
+  animated = true,
   className,
   style,
   tabBarExtraContent,
@@ -59,7 +60,10 @@ export function Tabs({
     if (!list) return;
     const measure = () => {
       const el = list.querySelector<HTMLElement>('[data-state="active"]');
-      if (!el) return;
+      if (!el) {
+        setBar({ left: 0, width: 0 });
+        return;
+      }
       const vertical = tabPosition === 'left' || tabPosition === 'right';
       setBar(
         vertical
@@ -159,17 +163,18 @@ export function Tabs({
                 +
               </button>
             )}
-            {!card && (
+            {!card && bar.width > 0 && (
               <span
                 aria-hidden
                 className={cn(
-                  'pointer-events-none absolute bg-accent transition-[left,width] duration-[165ms] ease-standard',
-                  vertical ? 'start-0 w-0.5 rounded-full' : 'bottom-0 h-0.5 rounded-full',
+                  'pointer-events-none absolute bg-accent',
+                  animated && 'transition-[translate,width,height] duration-[220ms] ease-standard',
+                  vertical ? 'start-0 top-0 w-0.5 rounded-full' : 'bottom-0 left-0 h-0.5 rounded-full',
                 )}
                 style={
                   vertical
-                    ? { top: bar.left, height: bar.width, width: 2 }
-                    : { left: bar.left, width: bar.width }
+                    ? { translate: `0 ${bar.left}px`, height: bar.width }
+                    : { translate: `${bar.left}px`, width: bar.width }
                 }
               />
             )}
@@ -190,7 +195,7 @@ export function Tabs({
             value={item.key}
             forceMount={keepMounted ? true : undefined}
             hidden={keepMounted && current !== item.key ? true : undefined}
-            className={cn('outline-none', current === item.key && 'animate-in fade-in-0 duration-[var(--ax-dur-fast)] ease-standard')}
+            className={cn('outline-none', animated && current === item.key && 'animate-in fade-in-0 duration-[var(--ax-dur-fast)] ease-standard')}
           >
             {item.children}
           </TabsPrimitive.Content>

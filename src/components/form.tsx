@@ -21,7 +21,7 @@ import { cn } from '../lib/cn';
 
 /**
  * shadcn 的写法：校验交给 react-hook-form + zod，组件只负责把
- * 「字段状态」翻译成 Astryx 的排版与错误样式。
+ * 根据字段状态显示错误样式。
  *
  *   const form = useForm({ resolver: zodResolver(schema), defaultValues })
  *   <Form {...form}>
@@ -259,7 +259,7 @@ export const FormMessage = forwardRef<HTMLDivElement, FormMessageProps>(function
       role="alert"
       data-slot="form-message"
       className={cn(
-        // 错误提示是贴在输入框下方的柔和红块（只留下面两角），和 antd 时代的观感一致
+        // 错误提示是贴在输入框下方的柔和红块（只留下面两角）
         'rounded-b-element bg-danger-bg px-2 py-1 text-xs leading-relaxed text-danger-fg',
         className,
       )}

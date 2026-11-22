@@ -107,7 +107,7 @@ function GlobeRing({ value }: { value: number }) {
 export interface AgentWebSearchProps {
   /** 搜到的结果；搜索中可以是空数组，一条条往里长 */
   sources?: AgentWebSource[];
-  /** antd 习惯的别名 */
+  /** 兼容别名 */
   items?: AgentWebSource[];
   status?: AgentWebSearchStatus;
   /** 搜索中显示在标签里的查询词 */

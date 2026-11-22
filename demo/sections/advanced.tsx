@@ -107,7 +107,7 @@ export function Advanced() {
       id="advanced"
       title="高级"
       api="CommandPalette / BottomSheet / Chat / OverflowList"
-      desc="组合型组件：基础组件一个字节都没改，它们只负责把浮层、列表、输入重新编排成一块完整能力。参数沿用熟悉的命名（open / onClose / items），行为按 C 端的节奏重写。"
+      desc="命令面板、底部抽屉和对话等组合组件。"
     >
       <Demo label="命令面板" code='<CommandPalette hotkey="mod+k" />' span="full" dir="block">
         <div className="flex flex-wrap items-center gap-3">
@@ -239,13 +239,13 @@ export function Advanced() {
           >
             <span className="block">
               1. 浮层动效统一改为进出场两条通道，方向由锚点侧决定。
-              <Citation index={1} title="动效规范" url="https://astryx.atmeta.com" />
+              <Citation index={1} title="动效规范" url="https://github.com/liukewia/octop-ui/blob/main/README.md#动效" />
             </span>
             <span className="mt-1.5 block">
-              2. 抽屉支持多级嵌套，父层让位而不是被盖住。
+              2. 打开子抽屉时，父抽屉会沿边缘移开。
               <Citation index={2} title="嵌套抽屉用法" />
             </span>
-            <span className="mt-1.5 block">3. 新增十一个组合型组件，基础组件零改动。</span>
+            <span className="mt-1.5 block">3. 命令面板支持键盘搜索和选择。</span>
           </ChatMessage>
           <ChatComposer
             value={draft}
@@ -262,7 +262,7 @@ export function Advanced() {
       <Demo label="引用" code="<Citation /> / <CitationList />" dir="column">
         <p className="m-0 text-md leading-relaxed text-fg-secondary">
           多级抽屉的让位距离默认 180px，可以按内容密度调整
-          <Citation index={1} title="抽屉 · 嵌套" url="https://astryx.atmeta.com" />
+          <Citation index={1} title="抽屉 · 嵌套" url="https://github.com/liukewia/octop-ui/blob/main/README.md#多级抽屉" />
           ；动效时钟只有两条曲线
           <Citation index={2} title="动效 · 曲线" />
           。
@@ -273,8 +273,8 @@ export function Advanced() {
             {
               key: 'a',
               title: '抽屉 · 嵌套与让位',
-              url: 'https://astryx.atmeta.com/components/Drawer',
-              domain: 'astryx.atmeta.com',
+              url: 'https://github.com/liukewia/octop-ui/blob/main/README.md#多级抽屉',
+              domain: 'github.com',
               snippet: '父层沿线平移 180px',
             },
             {

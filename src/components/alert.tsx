@@ -59,7 +59,7 @@ export function Alert({
     <div
       role="alert"
       className={cn(
-        // Astryx Banner：12 圆角、12/16 内边距、无描边，同族深字压在柔色底上
+        // 12 圆角、12/16 内边距、无描边，同族深字压在柔色底上
         'flex items-start gap-3 rounded-container px-4 py-3 text-base',
         banner && 'rounded-none',
         variant === 'outline' && 'border bg-transparent',

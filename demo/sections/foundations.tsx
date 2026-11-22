@@ -34,13 +34,12 @@ const TYPE = [
 ];
 
 const CLOCKS = [
-  { token: '95ms', use: 'hover 微调' },
-  { token: '125ms', use: '按压恢复 / 遮罩' },
-  { token: '165ms', use: '浮层入场' },
-  { token: '225ms', use: '分段滑块 / loading 延迟' },
-  { token: '300ms', use: '抽屉 / 折叠' },
-  { token: '400ms', use: '弹窗 / 骨架呼吸' },
-  { token: '525ms', use: 'spinner 一圈' },
+  { token: '120ms', use: '提示入场' },
+  { token: '125ms', use: '遮罩淡入淡出' },
+  { token: '180ms', use: '菜单与选择器入场' },
+  { token: '220ms', use: '标签页指示器' },
+  { token: '240ms', use: '弹窗入场、分段滑块' },
+  { token: '280ms', use: '抽屉入场' },
 ];
 
 export function Foundations() {
@@ -51,7 +50,7 @@ export function Foundations() {
       id="foundations"
       title="设计基座"
       api="--ax-*"
-      desc="四层结构：令牌 → @theme 映射 → .ax-* 修正 → 组件。组件里不出现十六进制，也不出现 ms 字面量。"
+      desc="颜色、圆角和控件尺寸可在主题编辑器中调整。"
     >
       <Demo label="面与线" code="bg-surface / border-line" dir="block">
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-6">
@@ -120,7 +119,7 @@ export function Foundations() {
         </Row>
       </Demo>
 
-      <Demo label="动效时钟" code="7 档，不是一个 200ms" span="full" dir="block">
+      <Demo label="动画时长" span="full" dir="block">
         <div className="grid w-full grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
           {CLOCKS.map((c) => (
             <div key={c.token} className="flex items-baseline gap-2">
@@ -133,7 +132,7 @@ export function Foundations() {
         </div>
       </Demo>
 
-      <Demo label="两套焦点语言" code=".ax-field / .ax-focus" span="full" dir="block">
+      <Demo label="焦点样式" code=".ax-field / .ax-focus" span="full" dir="block">
         <Row className="items-start">
           <Stack className="w-auto max-w-[300px] gap-2">
             <span className="text-xs text-fg-tertiary">文本类：描边加深 + 内阴影，没有外环</span>
@@ -155,7 +154,7 @@ export function Foundations() {
       <Demo label="按压语法" code=".ax-press" span="full">
         <Stack className="w-auto items-center gap-2">
           <Button type="primary">按住看叠色</Button>
-          <Hint>按下当帧叠 10% 实色，松开 125ms 淡出。没有波纹，也不压扁。</Hint>
+          <Hint>按下时加深底色，松开后在 125ms 内恢复。</Hint>
         </Stack>
         <Stack className="w-auto items-center gap-2">
           <Row className="justify-center">
@@ -165,7 +164,7 @@ export function Foundations() {
             <Tag color="blue">blue</Tag>
             <Tag color="purple">purple</Tag>
           </Row>
-          <Hint>柔色底 + 同族深字，不是白字压饱和底色。</Hint>
+          <Hint>浅色底搭配同色系深色文字。</Hint>
         </Stack>
       </Demo>
     </Section>

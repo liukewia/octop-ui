@@ -64,7 +64,7 @@ function Dots() {
 }
 
 /**
- * 一条消息。用户靠反相实底表态，Agent 靠留白表态 —— 这是 Astryx 的取舍：
+ * 用户消息使用实色背景。
  * 助手那侧不加边框，长回答才不会被一个圆角框反复切断。
  */
 export function AgentBubble({

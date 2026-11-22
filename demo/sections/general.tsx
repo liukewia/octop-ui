@@ -21,13 +21,13 @@ export function General() {
       id="general"
       title="通用"
       api="Button / Space / Typography"
-      desc="按钮是一块颜色，不是一块带描边的方块：层次只靠填充深浅，危险操作用柔红底而不是红描边。"
+      desc="按钮、间距和排版示例。"
     >
       <Demo label="按钮类型" code='type="primary" | default | text | link' span="full">
         <Row className="justify-center">
           <Button type="primary">主要</Button>
           <Button>次要</Button>
-          <Button type="dashed">虚线</Button>
+          <Button type="dashed">次级填充</Button>
           <Button type="text">文本</Button>
           <Button type="link">链接</Button>
           <Button type="primary" danger>
@@ -38,7 +38,7 @@ export function General() {
           </Button>
         </Row>
         <Hint>
-          <code>dashed</code> 刻意降级为次级填充 —— Astryx 没有虚线形态，但 API 保留，旧代码不会报错。
+          <code>dashed</code> 使用次级填充。
         </Hint>
       </Demo>
 
@@ -106,7 +106,7 @@ export function General() {
           </Button>
         </Row>
         <Hint>
-          默认延迟 225ms 才淡入 spinner：小于这个时长的请求不闪一下白圈。
+          加载超过 225ms 时显示进度图标。
         </Hint>
       </Demo>
 

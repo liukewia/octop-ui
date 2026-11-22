@@ -2,9 +2,7 @@
    @octop/ui — 样式基座
    -----------------------------------------------------------------------------
    三层结构：
-     1) 令牌：:root / .dark 上的 --ax-*，数值取自 Astryx（theme-neutral 0.7.x），
-        按 C 端场景做了三处调校：控件高度从 28/32/36 抬到 32/40/48、
-        正文从 14 抬到 15、触屏指针下再自动 +4px。
+     1) 令牌：:root / .dark 上的 --ax-*，包括颜色、圆角、字号和控件尺寸。
      2) 映射：@theme inline 把令牌暴露成 Tailwind 语义类（bg-surface / text-fg /
         rounded-element / ease-standard …），组件只写语义类，不写十六进制。
      3) 修正：@layer components 里的 .ax-* —— 焦点两套语言、按压叠色、
@@ -42,7 +40,7 @@
   --ax-fg-disabled: #919191;
   --ax-fg-inverse: #ffffff;
 
-  /* 线：Astryx 的层次靠描边而不是投影 */
+  /* 线：描边色阶 */
   --ax-line: rgba(0, 0, 0, 0.08);
   --ax-line-soft: rgba(0, 0, 0, 0.05);
   --ax-line-strong: #d4d4d4;
@@ -50,7 +48,7 @@
   --ax-switch-off: #c9c9c9;
   --ax-switch-thumb: #ffffff;
 
-  /* 主色：Astryx 是单色 accent，不是蓝 */
+  /* 主色：默认使用中性色 */
   --ax-accent: #1b1b1b;
   --ax-accent-hover: #3d3d3d;
   --ax-accent-soft: #d4d4d4;
@@ -112,10 +110,10 @@
   --ax-dur-medium: 300ms;
   --ax-dur-medium-max: 400ms;
   --ax-dur-spin: 525ms;
-  --ax-ease-standard: cubic-bezier(0.24, 1, 0.4, 1);
-  --ax-ease-exit: cubic-bezier(0.3, 0, 0.6, 0.6);
+  --ax-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ax-ease-exit: cubic-bezier(0.4, 0, 1, 1);
 
-  /* 按压：Astryx 是叠一层实色，不是波纹，也不是压扁 */
+  /* 按压：按下时叠加实色 */
   --ax-press: rgba(0, 0, 0, 0.1);
   --ax-press-soft: rgba(0, 0, 0, 0.06);
 
@@ -162,7 +160,7 @@
   --ax-switch-off: #5a5a5a;
   --ax-switch-thumb: #262626;
 
-  /* 主色反相：暗色下近白，这是 Astryx 最鲜明的特征 */
+  /* 主色反相：暗色下近白 */
   --ax-accent: #f1f1f1;
   --ax-accent-hover: #ffffff;
   --ax-accent-soft: #474747;
@@ -509,13 +507,17 @@
   }
 
   /* ---- 浮层：影 + 描边，圆角 container ---- */
+  .ax-popup-origin {
+    transform-origin: var(--radix-popper-transform-origin, center);
+  }
+
   .ax-popover {
     background: var(--ax-surface);
     border: 1px solid var(--ax-line);
     border-radius: var(--ax-radius-container);
     box-shadow: var(--ax-shadow-med);
   }
-  /* Popover / Tooltip 没有描边，边界全交给阴影（Astryx 真站就是 border: 0） */
+  /* Popover / Tooltip 没有描边，边界全交给阴影 */
   .ax-popover-soft {
     background: var(--ax-surface);
     border: 0;

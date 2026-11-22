@@ -26,7 +26,7 @@ const MODELS = [
 ];
 
 const SOURCES = [
-  { index: 1, title: 'Astryx · 卡片与容器的圆角规范', url: 'https://astryx.atmeta.com/foundations/radius' },
+  { index: 1, title: 'Octop UI · 圆角与控件尺寸', url: 'https://github.com/liukewia/octop-ui/blob/main/README.md#设计基座' },
   { index: 2, title: 'Octop UI · Token 分层说明', url: 'https://github.com/liukewia/octop-ui#readme' },
 ];
 

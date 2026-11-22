@@ -7,7 +7,7 @@ export type ButtonSize = 'large' | 'middle' | 'small';
 export type ButtonShape = 'default' | 'circle' | 'round';
 
 const button = cva(
-  // 没有任何描边与投影：Astryx 的按钮是「一块颜色」，层次只靠填充深浅
+  // 按钮通过填充色区分层级
   [
     'ax-press ax-focus relative inline-flex select-none items-center justify-center',
     'gap-2 whitespace-nowrap font-medium',
@@ -20,7 +20,7 @@ const button = cva(
       type: {
         primary: 'bg-accent text-on-accent hover:bg-accent-hover',
         default: 'bg-muted text-fg hover:bg-muted-strong',
-        // Astryx 没有虚线按钮：降级成次级填充，保留 API 不保留虚线
+        // 旧的 dashed 属性使用次级填充
         dashed: 'bg-muted text-fg hover:bg-muted-strong',
         text: 'bg-transparent text-fg hover:bg-muted-soft',
         link: 'bg-transparent px-0 text-fg underline decoration-line-strong underline-offset-[3px] hover:decoration-fg',
@@ -71,7 +71,7 @@ const button = cva(
 
 export interface ButtonProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type' | 'color'> {
-  /** 按钮类型。dashed 会降级为次级填充（Astryx 没有虚线形态） */
+  /** 按钮类型。dashed 会降级为次级填充 */
   type?: ButtonType;
   size?: ButtonSize;
   shape?: ButtonShape;
@@ -90,7 +90,7 @@ export interface ButtonProps
 }
 
 function Spinner({ delay = 225 }: { delay?: number }) {
-  // 延迟 225ms 淡入：瞬时请求不会闪一下图标（Astryx 的 medium-min）
+  // 延迟 225ms 淡入：瞬时请求不会闪一下图标
   return (
     <span
       aria-hidden

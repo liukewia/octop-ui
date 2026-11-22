@@ -78,8 +78,7 @@ function useNotices() {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-/* 图标 17px：Astryx 的 Toast 里 icon 是 1.7 倍字号（14 × 1.2），
- * 用 lucide 的 17px 盒子能对齐原始卡片的行盒，不把高度顶到 44。 */
+/* 图标对齐 20px 的文本行盒。 */
 function NoticeIcon({ type }: { type: NoticeType }) {
   const className = 'size-[17px] shrink-0';
   if (type === 'loading') return <span className="ax-spinner size-[17px] shrink-0 text-fg-tertiary" />;
@@ -98,7 +97,7 @@ function MessageViewport() {
           key={item.id}
           role="status"
           className={cn(
-            // Astryx 原始 Toast：白卡、12 圆角、1px 8% 描边，padding 10/16，
+            // 提示卡片：白卡、12 圆角、1px 8% 描边，padding 10/16，
             // 行高 20 → 高度 42。没有配色底、没有图标容器，只有一道极淡的影。
             'pointer-events-auto flex max-w-[min(520px,100%)] items-center gap-2',
             'rounded-container border border-line bg-surface px-4 py-2.5 text-base text-fg shadow-toast',

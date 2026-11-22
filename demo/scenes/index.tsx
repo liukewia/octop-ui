@@ -80,7 +80,7 @@ export function Scenes() {
       <header className="mb-5">
         <h1 className="m-0 text-2xl font-semibold tracking-[-0.01em] text-fg sm:text-3xl">场景示例</h1>
         <p className="m-0 mt-2 max-w-[720px] text-sm leading-relaxed text-fg-secondary sm:text-md">
-          同一套组件，按真实业务拼成六个界面。这里不放 props 表，只看密度、留白与层级在实际页面里站不站得住。
+          查看组件在看板、消息中心、账号设置、结算、助手和移动页面中的用法。
         </p>
       </header>
 

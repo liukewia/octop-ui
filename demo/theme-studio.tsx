@@ -15,7 +15,6 @@ import {
   Tag,
   ThemeEditor,
   DEFAULT_THEME,
-  TOKEN_GROUPS,
   type ThemeConfig,
 } from '../src';
 import { cn } from '../src/lib/cn';
@@ -231,22 +230,11 @@ export function ThemeStudio({
       <div className="mx-auto flex h-full max-w-[1280px] flex-col px-5 pt-6 sm:px-8">
         <header className="mb-4 flex flex-none flex-wrap items-end justify-between gap-x-4 gap-y-2">
           <div className="min-w-0">
-            <div className="mb-1.5 flex items-center gap-2 text-xs text-fg-tertiary">
-              <span className="inline-flex h-5 items-center rounded-full bg-accent px-2 text-2xs font-medium text-on-accent">
-                主题
-              </span>
-              <span>
-                5 个旋钮 · {TOKEN_GROUPS.reduce((n, group) => n + group.tokens.length, 0)} 枚令牌 · 0
-                次重新构建
-              </span>
-            </div>
             <h1 className="m-0 text-2xl font-semibold tracking-[-0.01em] text-fg sm:text-3xl">
-              主题是旋钮，不是分支
+              主题编辑器
             </h1>
             <p className="mt-1.5 max-w-[760px] text-sm text-fg-tertiary">
-              组件只写语义类（<code className="font-mono">bg-surface</code>、
-              <code className="font-mono">text-fg</code>）。五个旋钮推出一整套令牌写进{' '}
-              <code className="font-mono">:root</code>，改完立刻生效，不用重编、也不用给组件加 variant。
+              调整颜色、圆角、间距和字号，在右侧预览。
             </p>
           </div>
           <div className="flex flex-none items-center gap-1.5 text-xs text-fg-tertiary">

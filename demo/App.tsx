@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { ConfigProvider, Tooltip, applyTheme, readStoredTheme, storeTheme } from '../src';
 import type { ThemeConfig } from '../src';
 import { ThemeStudio } from './theme-studio';
-import { useLiveTokens } from './live-tokens';
 import { Foundations } from './sections/foundations';
 import { General } from './sections/general';
 import { LayoutSection } from './sections/layout';
@@ -71,7 +70,6 @@ export default function App() {
   const [active, setActive] = useState('foundations');
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeConfig | null>(() => readStoredTheme());
-  const tokens = useLiveTokens();
 
   useEffect(() => {
     document.documentElement.style.colorScheme = mode;
@@ -239,71 +237,15 @@ export default function App() {
               <div className="mx-auto max-w-[912px]">
                 <header className="mb-16">
                   <h1 className="m-0 mb-3 text-4xl font-semibold tracking-[-0.01em] text-fg max-md:text-3xl">
-                    把熟悉的组件 API，换成 C 端的皮肤
+                    Octop UI
                   </h1>
-                  <p className="mb-5 flex flex-wrap items-center gap-2 text-xs text-fg-tertiary">
-                    <code className="font-mono text-xs">68 个组件 · 14.9k 行</code>
-                    <span>·</span>
-                    <code className="font-mono text-xs">Radix + Tailwind v4 + CVA</code>
-                    <span>·</span>
-                    <span>零运行时主题 / 一根 import</span>
+                  <p className="mb-5 text-base text-fg-secondary">
+                    采用 shadcn/ui 样式约定的 React 组件库。
                   </p>
-                  <p className="mb-6 max-w-[720px] text-lg text-fg-tertiary">
-                    对外是 <strong className="font-medium text-fg">Button type="primary"</strong>、
-                    <strong className="font-medium text-fg">Select options</strong>、
-                    <strong className="font-medium text-fg">Modal open</strong>{' '}
-                    这类熟手写法；对内统一令牌、焦点、按压与浮层动效，换掉 import 就能用。
-                  </p>
-                  <div className="mb-4 inline-block max-w-full overflow-x-auto rounded-container bg-canvas px-3 py-2 font-mono text-xs leading-[1.67] whitespace-pre text-fg-tertiary">
-                    {`import { Button } from '@octop/ui';
-import '@octop/ui/style.css';`}
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                    {[
-                      { name: 'accent', value: 'var(--ax-accent)' },
-                      { name: 'bg', value: 'var(--ax-bg)' },
-                      { name: 'surface', value: 'var(--ax-surface)' },
-                      { name: 'line', value: 'var(--ax-line-strong)' },
-                    ].map((t) => (
-                      <span
-                        key={t.name}
-                        className="inline-flex h-6 items-center gap-1.5 rounded-full bg-canvas px-2.5 text-xs text-fg-tertiary tabular-nums"
-                      >
-                        <span
-                          className="size-2.5 flex-none rounded-[3px] shadow-[inset_0_0_0_1px_var(--ax-line-strong)]"
-                          style={{ background: t.value }}
-                        />
-                        {t.name}
-                      </span>
-                    ))}
-                    <span className="inline-flex h-6 items-center rounded-full bg-canvas px-2.5 text-xs text-fg-tertiary tabular-nums">
-                      radius {tokens.radius.join(' / ')}
-                    </span>
-                    <span className="inline-flex h-6 items-center rounded-full bg-canvas px-2.5 text-xs text-fg-tertiary tabular-nums">
-                      h {tokens.heights.join(' / ')}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => go('scenes')}
-                      className="ax-focus inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-fg underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-fg"
-                    >
-                      六个业务场景 →
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => go('agent')}
-                      className="ax-focus inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-fg underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-fg"
-                    >
-                      五个 Agent 场景 →
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => go('theme')}
-                      className="ax-focus inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-fg underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-fg"
-                    >
-                      主题编辑器 →
-                    </button>
-                  </div>
+                  <pre className="m-0 w-fit max-w-full overflow-x-auto rounded-container bg-canvas px-3 py-2 text-sm leading-relaxed text-fg-secondary">
+                    <code>{`import { Button } from '@octop/ui';
+import '@octop/ui/style.css';`}</code>
+                  </pre>
                 </header>
 
                 <Foundations />

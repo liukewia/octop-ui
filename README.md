@@ -1,7 +1,6 @@
 # @octop/ui
 
-一套面向 **C 端** 的 React 组件库：底层是 shadcn/ui 的做法（Radix Primitives + Tailwind v4 + CVA），
-皮肤是 Astryx 的十色板与四层令牌。68 个组件（55 个基础 + 13 个高级）共用同一套高度、焦点、按压与浮层时钟，引一次 CSS 就能跑起来；再带一个可视化主题编辑器，五个旋钮改完立刻热更。
+采用 shadcn/ui 样式约定的 React 组件库。导入组件和样式即可使用，主题编辑器支持实时预览。
 
 ```tsx
 import { Button, Select, Modal } from '@octop/ui';
@@ -13,9 +12,6 @@ import '@octop/ui/style.css';
 ```
 
 - **API 形态**：数据驱动的 `items`（Tabs / Collapse / Menu / Steps / Descriptions）、`destroyOnHidden`、`Divider titlePlacement`、`Button iconPosition`、`Modal.xxx` 命令式 API
-- **组件**：79 个文件、68 个基础导出（55 基础 + 13 高级）+ 19 个 Agent 模板导出、约 14.5k 行实现，零运行时主题
-- **产物**：`dist/index.js`（~364KB / gzip 86KB）、`dist/octop-ui.css`（~95KB / gzip 17KB）、完整 `.d.ts`
-- **动效**：shadcn 的 `animate-in` / `animate-out` 组合类（`tw-animate-css`），时长与曲线仍走 Astryx 令牌
 - **React**：`^18.2 || ^19`，声明为 peer dependency，不打包进产物
 
 **在线展厅**：<https://liukewia.github.io/octop-ui/>（`?theme=dark` 直接进深色）
@@ -54,19 +50,6 @@ Agent 视图用 `?view=agent&agent=<id>` 定位。它解决的不是「怎么聊
 这六屏同样只消费 `src/` 的导出；为了让「暂停 / 继续 / 审批 / 终止」都有真实反馈，交互状态全部写在场景组件内部，库代码没有为 demo 增加过 props。
 
 ![Agent 场景](docs/demo-agent.png)
-
----
-
-## 为什么不用现成的组件库
-
-| | 运行时样式型组件库 | 本仓库 |
-| --- | --- | --- |
-| 主题 | 靠 Provider 覆盖 token，改不到结构 | 令牌 + `@layer` 组合，结构本身就是设计 |
-| 包体 | 全量 cssinjs 运行时 | 预编译 CSS，没有运行时样式计算 |
-| 交互 | 库自带的动效时钟与形态，想改要绕开它 | 我们自己的时钟（95→525ms 七档）与形态 |
-| 依赖 | 组件库本体 + 一长串 rc-* 依赖 | Radix 一组 + cva/clsx/tailwind-merge |
-
-代价是要维护 68 个组件；换来的是「视觉与交互完全可控」和「消费方不用装 Tailwind」。
 
 ---
 
@@ -269,23 +252,6 @@ AgentStreamingResponse / AgentWebSearch / AgentWebSearchAnswer / AgentWebSearchC
 **工具类**：`scroll-fade`（含 `-x/-y/-t/-b/-l/-r/-s/-e`、尺寸档、`-none`）、
 `shimmer`（含 `-once/-reverse/-none`、`duration/spread/angle` 档）。
 
-### 与常见做法的选择差异
-
-| 项 | 常见做法 | 这里 | 为什么 |
-| --- | --- | --- | --- |
-| `Button type="dashed"` | 虚线描边 | **降级为次级填充**（无虚线） | Astryx 没有虚线形态，但参数保留，旧写法不报错 |
-| `Tooltip` | 有箭头、深色底 | **无箭头**，反相墨色底（深色模式下自动反相） | 箭头在 12px 圆角上会显得脏 |
-| `Segmented` | 指示块瞬间切换 | **225ms 滑动落位**，宽度用 ResizeObserver 量 | 分段是"选择"，位移能表达状态迁移 |
-| `Tabs` 墨条 | 200ms 淡入淡出 | **165ms 跟随**（left/width 过渡） | 阅读连续性 |
-| `Modal` 窄屏 | 仍是居中对话框 | **≤640px 自动变底部抽屉**（`variant` 可强制） | C 端拇指可达性 |
-| 控件高度 | 24/32/40 | **32/40/48**，粗指针设备自动 36/44/52 | C 端可点区 ≥44 |
-| 危险按钮 | 红描边 / 红底白字 | **柔红底 + 同族深字** | 降低视觉噪音，仍可识别 |
-| `Link` | 品牌蓝 | **文字 + 下划线** | 蓝色在 C 端容易被误认成主按钮 |
-| 按压反馈 | 波纹 / 缩放 | **叠 10% 实色**，松开 125ms 淡出 | 没有波纹的"脏边"，也不位移布局 |
-| `Divider` 标题位置 | 只收 `orientation` 一个名字 | `orientation` 与 `titlePlacement` 都收 | 两种写法都不必改 |
-| `Tabs destroyOnHidden` | 默认卸载未激活面板 | 默认保留 DOM，`forceMount` + `hidden` | 切回来不重挂，滚动位置与表单状态都在 |
-| `message` / `notification` | 白卡 + 阴影，图标 14 | **Astryx 原始卡片**：12 圆角、`1px 8%` 描边、`padding 10/16`（通知 `12/24` 宽 380）、正文 14、图标 17、标题 17/400 | 卡片靠描边分层，阴影只做贴地感；小尺寸下不至于糊成一团 |
-
 ### 还没做（按需再补）
 
 - 虚拟滚动（Table / Tree / Select）：业务侧一页 ≤50 行，测量成本高于收益。
@@ -294,10 +260,10 @@ AgentStreamingResponse / AgentWebSearch / AgentWebSearchAnswer / AgentWebSearchC
 
 ---
 
-## 表单：shadcn 的 API，Astryx 的错误块
+## 表单
 
 表单不再自带 store。`<Form>` 就是 `react-hook-form` 的 `FormProvider`，校验交给 zod schema，
-组件只做一件事：把字段状态翻译成 Astryx 的排版、错误块和 aria 属性。
+组件根据字段状态显示错误提示和相应的 ARIA 属性。
 
 ```tsx
 const schema = z.object({
@@ -349,52 +315,24 @@ export function BugReportForm() {
 错误样式只在一处写：`[data-slot='form-item'][data-invalid] .ax-field` 描红，`[data-has-message]` 时把输入框下面两角削平，
 于是红色的 `FormMessage` 像贴在控件下沿的一小块——Input / TextArea / Select 都不需要各自再记 `status`。
 
-从 antd 写法迁过来的对照：
-
-| 旧 | 新 |
-| --- | --- |
-| `<Form.Item name rules={[{ required, min, max, pattern }]}>` | zod schema + `<FormField render>` |
-| `initialValues` | `useForm({ defaultValues })` |
-| `onFinish` / `onFinishFailed` | `form.handleSubmit(onSubmit, onInvalid)` |
-| `Form.useForm()` / `Form.useWatch()` | `useForm()` / `form.watch()`（直接来自 react-hook-form） |
-| `valuePropName="checked"` | 自己在 render 里 `checked={field.value} onChange={field.onChange}` |
-
 ---
 
-## 动效：shadcn 的写法，Astryx 的时钟
+## 动效
 
-浮层不再各写一份 `@keyframes`，改成 shadcn 那套「开关类」组合：`animate-in` / `animate-out` 两条通道，
-方向、缩放、透明度各是一个独立的类，拼起来才是最终动作。十六处浮层共用 `src/lib/motion.ts` 里的四五个常量。
+浮层使用 shadcn/ui 的 `animate-in` 和 `animate-out`。浮层根据弹出方向移动，缩放以触发点为基准。
 
-```tsx
-// 浮层：淡入 + scale(.95) + 贴着锚点那一侧推 8px
-const POPUP_MOTION = [
-  'data-[state=open]:animate-in data-[state=closed]:animate-out',
-  'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
-  'data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95',
-  'data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:slide-in-from-top-2',
-  'data-[state=open]:duration-[var(--ax-dur-fast-max)] data-[state=closed]:duration-[var(--ax-dur-fast)]',
-  'data-[state=open]:ease-standard data-[state=closed]:ease-exit',
-].join(' ');
-```
-
-| 浮层 | 入场 | 退场 |
+| 组件 | 进入 | 退出 |
 | --- | --- | --- |
-| Popover / Select / Dropdown / DatePicker | 165ms：淡入 + `scale(.95)` + 贴锚点 8px | 125ms |
-| Tooltip | 125ms：淡入 + 4px | 125ms |
-| Dialog / Modal | 400ms：淡入 + `scale(.95)` + 上浮 16px | 125ms：收到 `.98` |
-| Drawer | 300ms：整块滑入（不缩放） | 225ms |
-| BottomSheet / 窄屏 Modal | 300ms：自底向上 100% | 225ms |
-| Toast | 125ms：自上方 8px 落下 | — |
+| Popover / Select / Dropdown / DatePicker | 180ms，淡入、位移 4px、轻微缩放 | 110ms，淡出 |
+| Tooltip | 120ms，淡入并移动 2px | 90ms，淡出 |
+| Dialog / Modal | 240ms，淡入、上移 6px、轻微缩放 | 130ms，淡出 |
+| Drawer / BottomSheet | 280ms，沿所在边缘滑入 | 200ms，沿原方向滑出 |
 
-- 方向类用的是 `data-[side=*]`：Select 在上方弹出就从下方推入，不需要 JS 判断 placement。
-- 时长走 `duration-[var(--ax-dur-medium)]` 这类变量，所以「95 / 125 / 165 / 225 / 300 / 400 / 525」这套时钟没有变成魔数。
-- `tw-animate-css` 只在构建期用（CSS 已经预编译进 `dist/octop-ui.css`），消费方不需要装 Tailwind 或这个包。
-- 全局 `prefers-reduced-motion` 仍然生效：动画时长压到 1ms，Radix 会在下一帧卸载浮层。
+系统启用减少动态效果时，动画和过渡缩短至 1ms。
 
 ## 多级抽屉
 
-只借鉴 `Drawer` 的嵌套写法与 `push` 参数，样式按这里的规范来：子层打开时父层沿同一方向让出 `distance`，而不是被盖住。
+打开子抽屉时，父抽屉沿同一方向移开。用 `push.distance` 设置移动距离。
 
 ```tsx
 <Drawer open={open} onClose={close} title="项目详情" width={520} push={{ distance: 180 }}>
@@ -434,12 +372,9 @@ const POPUP_MOTION = [
 
 ---
 
-## Agent 模板：shadcn 的 AI Elements，antd 的 API
+## Agent 模板
 
-`src/components/agent/` —— 对应 shadcn 的 [AI Elements](https://ui.shadcn.com/docs/ai-elements)：
-对话、步骤、来源、确认这几块「模式」。shadcn 那边是复制进项目的组合，这里做成了可直接 import 的组件。
-视觉仍走 Astryx（留白、细描边、单色 accent），API 沿用 antd / ant-design-x 的命名：
-`items` / `placement` / `status` / `onSubmit` / `onItemClick`，状态值用 antd Steps 的那一套。
+可从 `@octop/ui` 导入对话、步骤、来源和确认组件。
 
 | AI Elements | 这里 | 主要 API |
 | --- | --- | --- |
@@ -462,7 +397,7 @@ const POPUP_MOTION = [
 | Streaming Response | `AgentStreamingResponse` | `text`、`status`（streaming/done/stopped）、`speed`、`ink`、`actions`、`onRetry`、`onFeedback`、`onCopy` |
 | Web Search | `AgentWebSearch` / `AgentWebSearchAnswer` / `AgentWebSearchCitation` | `sources`、`status`、`query`、`progress`、`expect`、`linked`、`open`；回答侧 `play`、`speed`、`onComplete` |
 
-状态沿用 antd Steps 的写法：`pending | running | success | error`，同时认 `wait / process / finish` 三个旧名，
+步骤状态包括`pending | running | success | error`，同时认 `wait / process / finish` 三个旧名，
 所以从 `<Steps status="process">` 迁过来不用改字符串。
 
 ```tsx
@@ -544,9 +479,7 @@ import {
 结果是先占格、再一条条长进来，比最后一起蹦出来更像「在搜」。`AgentWebSearchAnswer` 只给正文打字，
 `AgentWebSearchCitation` 整块落下 —— 引用是事实，不该有「正在打出来」的中间态。
 
-和 antd-x 的差异：`ThoughtChain` 这里拆成了三件 —— `AgentThoughtChain`（骨架）、`AgentReasoning`（思考）、
-`AgentTool`（工具）；`Sender` 的 `submitType` 只保留 `enter` / `shiftEnter`，没有做语音转文字，
-`allowSpeech` 只负责回调。`Conversations`（会话列表）没做 —— 它更像导航而不是 Agent 模板的一部分。
+`AgentThoughtChain` 负责步骤容器，`AgentReasoning` 展示思考过程，`AgentTool` 展示工具调用。
 
 ---
 
@@ -682,20 +615,6 @@ useLayoutEffect(() => {
 3. **修正**：`@layer components` 里的 `.ax-*`（两套焦点、按压叠色、字段壳、浮层、遮罩、spinner、骨架）。
 4. **动效**：utilities 层的 `animate-in/out` 组合（见上节），常量集中在 `src/lib/motion.ts`。
 5. **组件**：只写语义类，不出现十六进制、不出现 `ms` 字面量。
-
-### 时钟
-
-```
-95     hover 微调
-125    按压恢复 / 遮罩 / 图标旋转
-165    浮层入场（+8px, scale .95）
-225    分段滑块 / loading 延迟 / 卡片展开
-300    抽屉 / 折叠面板
-400    弹窗（+16px, scale .95）/ 骨架呼吸
-525    spinner 一圈（135° 弧）
-```
-
-曲线只有两条：`standard = cubic-bezier(.24,1,.4,1)`、`exit = cubic-bezier(.3,0,.6,.6)`。
 
 ### 高度与可点区
 

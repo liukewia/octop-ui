@@ -103,7 +103,7 @@ export const THEME_PRESETS: ThemePreset[] = [
   {
     id: 'mono',
     name: '单色',
-    hint: 'Astryx 默认',
+    hint: '默认灰阶',
     config: {
       base: 'neutral',
       accent: '#1b1b1b',

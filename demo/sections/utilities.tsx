@@ -60,7 +60,7 @@ export function Utilities() {
       id="utilities"
       title="工具类"
       api="scroll-fade / shimmer"
-      desc="两个纯 CSS 的工具类：一个让滚动容器的边缘淡出，一个让「正在进行」的文字扫一道光。都不挂脚本、不写滚动监听。"
+      desc="滚动边缘渐隐和文字高光。"
     >
       <Demo label="scroll-fade：纵向" code=".scroll-fade" span="full" dir="column">
         <div className="grid w-full gap-5 sm:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">

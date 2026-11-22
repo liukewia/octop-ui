@@ -30,7 +30,7 @@ export function Feedback() {
       id="feedback"
       title="反馈"
       api="Modal / message / notification"
-      desc="浮层入场 165ms、弹窗 400ms、遮罩 125ms —— 弹窗比浮层慢，因为它更大、信息更多，快了会看不清主次。"
+      desc="提示、通知、弹窗和抽屉。"
     >
       <Demo label="警告提示" code="Alert type" span="full" dir="column">
         <Alert type="info" showIcon message="这是一条信息提示" />
@@ -91,7 +91,7 @@ export function Feedback() {
             onClick={() => {
               message.open({ content: '同一个 key 会原地更新', key: 'k', duration: 0 });
               window.setTimeout(
-                () => message.open({ content: '两秒后变成成功', key: 'k', type: 'success' }),
+                () => message.open({ content: '更新完成', key: 'k', type: 'success' }),
                 1200,
               );
             }}
@@ -102,7 +102,7 @@ export function Feedback() {
             全部清空
           </Button>
         </Row>
-        <Hint>顶部居中，从上方 8px 淡入；同 key 复用同一个节点，不会叠两条。</Hint>
+        <Hint>提示从顶部淡入。相同的 key 会更新已有提示。</Hint>
       </Demo>
 
       <Demo label="通知提醒" code="notification.open()" span="full" dir="column">
@@ -179,7 +179,7 @@ export function Feedback() {
             onClick={() =>
               Modal.info({
                 title: '关于',
-                content: 'Octop UI v0.2.0 · 68 个组件',
+                content: 'Octop UI',
               })
             }
           >
@@ -218,7 +218,7 @@ export function Feedback() {
             底部
           </Button>
         </Row>
-        <Hint>右侧 300ms 滑入；底部形态在手机上就是标准的行动面板。</Hint>
+        <Hint>抽屉从所选边缘滑入。</Hint>
       </Demo>
 
       <Demo label="气泡确认" code="Popconfirm" dir="column">

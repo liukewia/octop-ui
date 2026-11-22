@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ClipboardCheck, FlaskConical, GitBranch, ListTree, MessagesSquare, Network, Settings2 } from 'lucide-react';
+import { ClipboardCheck, FlaskConical, ListTree, MessagesSquare, Network, Settings2 } from 'lucide-react';
 import { cn } from '../../../src/lib/cn';
 import { AgentApprovalScene } from './approval';
 import { AgentChatScene } from './chat';
@@ -78,16 +78,11 @@ export function AgentScenes() {
   return (
     <main className="mx-auto w-full max-w-[1080px] px-5 pt-8 pb-24 sm:px-8">
       <header className="mb-5">
-        <p className="m-0 flex items-center gap-1.5 text-xs font-medium text-fg-tertiary">
-          <GitBranch className="size-3.5" />
+        <h1 className="m-0 text-2xl font-semibold tracking-[-0.01em] text-fg sm:text-3xl">
           Agent 场景
-        </p>
-        <h1 className="m-0 mt-1.5 text-2xl font-semibold tracking-[-0.01em] text-fg sm:text-3xl">
-          把「不确定的过程」画清楚
         </h1>
         <p className="m-0 mt-2 max-w-[720px] text-sm leading-relaxed text-fg-secondary sm:text-md">
-          Agent 产品的难点从来不是聊天气泡，而是它现在在干什么、为什么停下、要你确认什么、花了多少钱。
-          下面六屏都在回答这四个问题。
+          查看对话、运行记录、工具审批、团队协作、配置和评测示例。
         </p>
       </header>
 

@@ -126,7 +126,7 @@ export function DataDisplay() {
       id="data-display"
       title="数据展示"
       api="Table / Tag / List / Descriptions"
-      desc="表格、列表这类高密度信息用 14px；正文用 15px。表头不加底色块，只靠字重和一条 8% 描边。"
+      desc="表格、列表和详情的常用写法。"
     >
       <Demo label="表格" code="columns / sorter / filters" span="full" dir="block">
         <Table

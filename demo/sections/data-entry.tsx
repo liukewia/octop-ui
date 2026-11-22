@@ -255,7 +255,7 @@ export function DataEntry() {
       id="data-entry"
       title="数据录入"
       api="Input / Select / DatePicker / Form"
-      desc="控件高度默认 40，触屏设备自动抬到 44 —— 只改一个令牌，不动组件代码。"
+      desc="输入框、选择器、日期选择和表单。"
     >
       <Demo label="输入框" code="Input" dir="column">
         <Input placeholder="基础输入框" />
@@ -453,8 +453,8 @@ export function DataEntry() {
           ]}
           defaultValue="week"
         />
-        <Segmented block shape="round" defaultValue="a" options={['全部', '待付款', '已完成']} />
-        <Hint>滑块 225ms 落位；宽度用 ResizeObserver 测量，标签换语言也不会错位。</Hint>
+        <Segmented block shape="round" defaultValue="全部" options={['全部', '待付款', '已完成']} />
+        <Hint>滑块随选项移动，并适应标签宽度。</Hint>
       </Demo>
 
       <Demo label="表单" code="Form + react-hook-form + zod" span="full" dir="column">

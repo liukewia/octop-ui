@@ -80,7 +80,7 @@ export function Tooltip({
             collisionPadding={8}
             style={{ zIndex, ...(color ? { background: color, color: '#fff' } : null), ...overlayStyle }}
             className={cn(
-              // Astryx 真站 tooltip：28 高、12 圆角、4/8 内边距、无箭头、无描边，暗色反相
+              // 提示样式：28 高、12 圆角、4/8 内边距、无箭头、无描边，暗色反相
               'z-50 max-w-[320px] select-none rounded-container bg-accent px-2 py-1 text-base leading-5 text-on-accent shadow-pop',
               TOOLTIP_MOTION,
               overlayClassName,

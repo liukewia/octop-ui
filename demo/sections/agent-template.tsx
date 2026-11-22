@@ -602,13 +602,7 @@ export function AgentTemplate() {
       id="agent-template"
       title="Agent 模板"
       api="AgentBubble / AgentSender / AgentThoughtChain …"
-      desc={
-        <>
-          对应 shadcn 的 AI Elements：对话、步骤、来源、确认、计划、上下文这几块「模式」。
-          视觉仍走 Astryx（留白、细描边、单色 accent），API 沿用 antd / antd-x 的命名
-          （items / placement / status / onSubmit）。
-        </>
-      }
+      desc="对话、运行步骤、引用来源和操作确认。"
     >
       <Demo label="气泡" code="AgentBubble" span="full" dir="column">
         <BubbleDemo />

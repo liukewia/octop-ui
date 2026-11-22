@@ -51,7 +51,7 @@ export function Navigation() {
       id="navigation"
       title="导航"
       api="Menu / Tabs / Steps / Pagination"
-      desc="Tabs 的墨条 165ms 跟随，不做整条横向滑动；Steps 的连接线用绝对定位，不会被 flex 裁掉。"
+      desc="菜单、标签页、步骤条和分页。"
     >
       <Demo label="菜单" code="Menu mode=inline" dir="column">
         <Menu mode="inline" defaultOpenKeys={['design']} defaultSelectedKeys={['design-token']} items={MENU_ITEMS} />
@@ -220,7 +220,7 @@ export function Navigation() {
             { key: 'feedback', href: '#feedback', title: '反馈' },
           ]}
         />
-        <Hint>点击平滑滚动；滚动时按位置自动高亮，不做 scrollspy 定时器轮询。</Hint>
+        <Hint>点击跳到对应章节，滚动时高亮当前章节。</Hint>
       </Demo>
 
       <Demo label="悬浮按钮" code="FloatButton" span="full">

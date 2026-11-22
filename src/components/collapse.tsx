@@ -97,11 +97,11 @@ export const Collapse = forwardRef<HTMLDivElement, CollapseProps>(function Colla
               )}
             >
               {item.showArrow !== false && (
-                <span className="shrink-0 text-fg-tertiary transition-transform duration-[125ms] ease-standard">
+                <span className="shrink-0 text-fg-tertiary transition-transform duration-[180ms] ease-standard">
                   {expandIcon ? (
                     expandIcon({ isActive: active })
                   ) : (
-                    <ChevronRight className={cn('size-4 transition-transform duration-[125ms]', active && 'rotate-90')} />
+                    <ChevronRight className={cn('size-4 transition-transform duration-[180ms] ease-standard', active && 'rotate-90')} />
                   )}
                 </span>
               )}
@@ -109,10 +109,10 @@ export const Collapse = forwardRef<HTMLDivElement, CollapseProps>(function Colla
               {item.extra && <span className="shrink-0">{item.extra}</span>}
             </button>
             <div
-              className="grid transition-[grid-template-rows] duration-[300ms] ease-standard"
+              className="grid transition-[grid-template-rows] duration-[240ms] ease-standard"
               style={{ gridTemplateRows: active ? '1fr' : '0fr' }}
             >
-              <div className="overflow-hidden">
+              <div className="min-h-0 overflow-hidden">
                 {(!destroyInactivePanel || active || item.forceRender) && (
                   <div
                     aria-hidden={!active}

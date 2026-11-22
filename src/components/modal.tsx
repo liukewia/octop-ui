@@ -117,7 +117,7 @@ const ModalRoot = function Modal({
             sheet ? SHEET_MOTION : DIALOG_MOTION,
             // C 端：窄屏从底部升起，圆角只留上面两角
             'max-sm:inset-x-0 max-sm:bottom-0 max-sm:top-auto max-sm:m-0 max-sm:max-h-[85dvh] max-sm:w-full max-sm:rounded-b-none max-sm:rounded-t-page',
-            !sheet && 'max-sm:data-[state=open]:zoom-in-100 max-sm:data-[state=open]:slide-in-from-bottom max-sm:data-[state=open]:duration-[var(--ax-dur-medium)] max-sm:data-[state=closed]:slide-out-to-bottom',
+            !sheet && 'max-sm:data-[state=open]:zoom-in-100 max-sm:data-[state=open]:slide-in-from-bottom max-sm:data-[state=open]:duration-[280ms] max-sm:data-[state=closed]:duration-[200ms] max-sm:data-[state=closed]:slide-out-to-bottom',
             sheet && 'inset-x-0 bottom-0 top-auto m-0 w-full rounded-b-none rounded-t-page',
             
             className,

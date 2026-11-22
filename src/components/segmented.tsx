@@ -22,11 +22,6 @@ export interface SegmentedProps<ValueType = string | number> {
   style?: React.CSSProperties;
 }
 
-/**
- * Astryx 的分段控件：灰槽（p4 / r10 / 40h）+ 滑块（24~32h / r6），
- * 滑块移动 225ms standard —— 比 300ms easeInOut 更「落位」，
- * 桌面没有拖动透镜，用一次性落位最接近真站。
- */
 export const Segmented = forwardRef<HTMLDivElement, SegmentedProps>(function Segmented(
   {
     options = [],
@@ -56,12 +51,16 @@ export const Segmented = forwardRef<HTMLDivElement, SegmentedProps>(function Seg
     if (!container) return;
     const measure = () => {
       const active = container.querySelector<HTMLElement>('[data-segmented-active="true"]');
-      if (!active) return;
+      if (!active) {
+        setThumb({ left: 0, width: 0 });
+        return;
+      }
       setThumb({ left: active.offsetLeft, width: active.offsetWidth });
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(container);
+    container.querySelectorAll('button[data-segmented-active]').forEach((option) => ro.observe(option));
     return () => ro.disconnect();
   }, [current, normalized.length, block]);
 
@@ -90,11 +89,11 @@ export const Segmented = forwardRef<HTMLDivElement, SegmentedProps>(function Seg
         <span
           aria-hidden
           className={cn(
-            'absolute top-1 h-[calc(100%-8px)] rounded-inner bg-surface shadow-[0_0_0_1px_var(--ax-line-soft)]',
-            'transition-[left,width] duration-[225ms] ease-standard',
+            'pointer-events-none absolute top-1 left-0 h-[calc(100%-8px)] rounded-inner bg-surface shadow-[0_0_0_1px_var(--ax-line-soft)]',
+            'transition-[translate,width] duration-[240ms] ease-standard',
             shape === 'round' && 'rounded-full',
           )}
-          style={{ left: thumb.left, width: thumb.width }}
+          style={{ translate: `${thumb.left}px`, width: thumb.width }}
         />
       )}
       {normalized.map((option) => {
@@ -116,7 +115,8 @@ export const Segmented = forwardRef<HTMLDivElement, SegmentedProps>(function Seg
               'ax-focus relative z-10 inline-flex items-center justify-center gap-1.5 rounded-inner px-3 text-base transition-colors duration-[125ms]',
               itemHeight,
               block && 'flex-1',
-              active ? 'font-semibold text-fg' : 'font-medium text-fg-secondary hover:text-fg',
+              'font-medium',
+              active ? 'text-fg' : 'text-fg-secondary hover:text-fg',
               'disabled:cursor-not-allowed disabled:text-fg-disabled',
               shape === 'round' && 'rounded-full',
             )}

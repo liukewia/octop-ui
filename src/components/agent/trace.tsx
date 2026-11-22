@@ -9,7 +9,7 @@ import {
 import { cn } from '../../lib/cn';
 import { CodeBlock } from '../advanced/code-block';
 
-/** 与 antd 的 Steps / antd-x 的 ThoughtChain 对齐：老写法也收 */
+/** 步骤状态及兼容别名 */
 export type AgentStepStatus = 'pending' | 'running' | 'success' | 'error';
 
 type StatusInput = AgentStepStatus | 'wait' | 'process' | 'finish';
