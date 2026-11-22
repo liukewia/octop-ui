@@ -3,6 +3,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { CalendarDays, ChevronLeft, ChevronRight, Clock, X } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { POPUP_MOTION } from '../lib/motion';
 import {
   fieldShell,
   heightClass,
@@ -329,7 +330,7 @@ function DatePickerRoot({
           align="start"
           sideOffset={4}
           collisionPadding={8}
-          className="ax-popover z-50 p-3 outline-none data-[state=open]:animate-layer-in data-[state=closed]:animate-layer-out"
+          className={`ax-popover z-50 p-3 outline-none ${POPUP_MOTION}`}
         >
           <CalendarPanel
             cursor={cursor}
@@ -479,7 +480,7 @@ export function RangePicker({
           align="start"
           sideOffset={4}
           collisionPadding={8}
-          className="ax-popover z-50 p-3 outline-none data-[state=open]:animate-layer-in data-[state=closed]:animate-layer-out"
+          className={`ax-popover z-50 p-3 outline-none ${POPUP_MOTION}`}
         >
           <CalendarPanel
             cursor={cursor}
@@ -588,7 +589,7 @@ export function TimePicker({
           align="start"
           sideOffset={4}
           collisionPadding={8}
-          className="ax-popover z-50 flex gap-1 p-2 outline-none data-[state=open]:animate-layer-in"
+          className={`ax-popover z-50 flex gap-1 p-2 outline-none ${POPUP_MOTION}`}
         >
           <div className="h-48 w-14 overflow-y-auto">
             {options(24, hourStep).map((h) => (

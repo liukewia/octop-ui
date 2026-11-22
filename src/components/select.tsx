@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { fieldShell, type SizeType, type StatusType, type VariantType } from '../lib/field';
 import { useControllableState } from '../lib/hooks';
 import { Tag } from './tag';
+import { POPUP_MOTION } from '../lib/motion';
 
 export type SelectValue = string | number;
 
@@ -489,7 +490,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
           collisionPadding={8}
           className={cn(
             'ax-popover z-50 w-[var(--radix-popover-trigger-width)] min-w-[160px] overflow-hidden outline-none',
-            'data-[state=open]:animate-layer-in data-[state=closed]:animate-layer-out',
+            POPUP_MOTION,
             dropdownClassName,
           )}
           onOpenAutoFocus={(e) => {

@@ -1,7 +1,17 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { cn } from '../lib/cn';
+import { useIsMobile } from '../lib/hooks';
+import { DRAWER_CLOCK, DRAWER_MOTION, FADE_MOTION } from '../lib/motion';
 import { Button } from './button';
+
+export type DrawerPlacement = 'top' | 'right' | 'bottom' | 'left';
+
+export interface DrawerPushConfig {
+  /** 每个子层把父层推开的距离，默认 180 */
+  distance?: number;
+}
 
 export interface DrawerProps {
   open?: boolean;
@@ -12,7 +22,7 @@ export interface DrawerProps {
   children?: React.ReactNode;
   extra?: React.ReactNode;
   footer?: React.ReactNode;
-  placement?: 'top' | 'right' | 'bottom' | 'left';
+  placement?: DrawerPlacement;
   width?: number | string;
   height?: number | string;
   closable?: boolean;
@@ -21,30 +31,40 @@ export interface DrawerProps {
   keyboard?: boolean;
   destroyOnClose?: boolean;
   zIndex?: number;
+  /** 有子抽屉打开时把自身推开：`false` 不推，`{ distance }` 自定义距离，默认 180 */
+  push?: boolean | DrawerPushConfig;
   className?: string;
   bodyClassName?: string;
   style?: React.CSSProperties;
   rootClassName?: string;
 }
 
-const SIDE_CLASS = {
-  right: {
-    box: 'inset-y-0 right-0 h-full rounded-s-container',
-    closed: 'data-[state=closed]:translate-x-full',
-  },
-  left: {
-    box: 'inset-y-0 left-0 h-full rounded-e-container',
-    closed: 'data-[state=closed]:-translate-x-full',
-  },
-  top: {
-    box: 'inset-x-0 top-0 w-full rounded-b-container',
-    closed: 'data-[state=closed]:-translate-y-full',
-  },
-  bottom: {
-    box: 'inset-x-0 bottom-0 w-full rounded-t-page',
-    closed: 'data-[state=closed]:translate-y-full',
-  },
-} as const;
+/**
+ * 嵌套抽屉的通道：子层把自己「已打开」这件事告诉父层，
+ * 父层按 `distance × 打开的层数` 沿同一方向平移，让出被覆盖的那一条边。
+ * 只做平移、不做缩放 —— 抽屉是整块面板，缩小会读出「变成了卡片」。
+ */
+interface DrawerNest {
+  placement: DrawerPlacement;
+  distance: number;
+  register: () => () => void;
+}
+
+const DrawerNestContext = createContext<DrawerNest | null>(null);
+
+const BOX_CLASS: Record<DrawerPlacement, string> = {
+  right: 'inset-y-0 right-0 h-full rounded-s-container',
+  left: 'inset-y-0 left-0 h-full rounded-e-container',
+  top: 'inset-x-0 top-0 w-full rounded-b-container',
+  bottom: 'inset-x-0 bottom-0 w-full rounded-t-page',
+};
+
+const PUSH_EDGE: Record<DrawerPlacement, 'top' | 'right' | 'bottom' | 'left'> = {
+  right: 'right',
+  left: 'left',
+  top: 'top',
+  bottom: 'bottom',
+};
 
 export function Drawer({
   open,
@@ -59,91 +79,140 @@ export function Drawer({
   width = 400,
   height,
   closable = true,
-  mask = true,
+  mask,
   maskClosable = true,
   keyboard = true,
   destroyOnClose,
   zIndex,
+  push,
   className,
   bodyClassName,
   style,
   rootClassName,
 }: DrawerProps) {
-  const side = SIDE_CLASS[placement];
+  // 自己是不是开着，得自己知道：嵌套时要据此通知父层
+  const [innerOpen, setInnerOpen] = useState(!!defaultOpen);
+  const isOpen = open ?? innerOpen;
+  const [nestCount, setNestCount] = useState(0);
+
+  const parent = useContext(DrawerNestContext);
+
+  const register = useCallback(() => {
+    setNestCount((count) => count + 1);
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      setNestCount((count) => Math.max(0, count - 1));
+    };
+  }, []);
+
+  const pushDistance =
+    push === false ? 0 : typeof push === 'object' ? (push.distance ?? 180) : 180;
+
+  // 有父层、自己开着、父层允许推 —— 三条都成立才算占了一层
+  useEffect(() => {
+    if (!parent || !isOpen || parent.distance <= 0) return;
+    return parent.register();
+  }, [parent, isOpen]);
+
+  const nestValue = useMemo<DrawerNest>(
+    () => ({ placement, distance: pushDistance, register }),
+    [placement, pushDistance, register],
+  );
+
   const isVertical = placement === 'top' || placement === 'bottom';
+  // 窄屏两块面板都接近满宽，让出 180px 只会切出一溜被截断的文字 —— 手机上直接盖上去
+  const isMobile = useIsMobile();
+  const offset = isMobile ? 0 : pushDistance * nestCount;
+  // 子层默认不再压一层遮罩：页面已经被最外层的遮罩压暗了，
+  // 再叠一次会把父层也抹黑，多级抽屉就只剩最上面一层看得见。
+  const showMask = mask ?? !parent;
 
   return (
-    <DialogPrimitive.Root
-      open={open}
-      defaultOpen={defaultOpen}
-      onOpenChange={(next) => {
-        if (!next) onClose?.();
-        afterOpenChange?.(next);
-      }}
-    >
-      <DialogPrimitive.Portal>
-        {mask && (
-          <DialogPrimitive.Overlay
-            className="ax-scrim fixed inset-0 z-50 data-[state=closed]:opacity-0 data-[state=closed]:transition-opacity data-[state=closed]:duration-[125ms]"
-            style={{ zIndex }}
-          />
-        )}
-        <DialogPrimitive.Content
-          aria-describedby={undefined}
-          data-destroy-on-close={destroyOnClose ? '' : undefined}
-          onPointerDownOutside={(e) => {
-            if (!maskClosable) e.preventDefault();
-          }}
-          onEscapeKeyDown={(e) => {
-            if (!keyboard) e.preventDefault();
-          }}
-          style={{
-            zIndex: zIndex ? zIndex + 1 : undefined,
-            ...(isVertical ? { maxHeight: height ?? '85dvh' } : { width }),
-            ...style,
-          }}
-          className={cn(
-            'fixed z-50 flex max-w-[100vw] flex-col border-line bg-surface shadow-high outline-none',
-            !isVertical && 'max-w-[92vw] border-s',
-            isVertical && 'border-t',
-            'transition-transform duration-[300ms] ease-standard',
-            side.box,
-            side.closed,
-            rootClassName,
-            className,
+    <DrawerNestContext.Provider value={nestValue}>
+      <DialogPrimitive.Root
+        open={isOpen}
+        onOpenChange={(next) => {
+          if (open === undefined) setInnerOpen(next);
+          if (!next) onClose?.();
+          afterOpenChange?.(next);
+        }}
+      >
+        <DialogPrimitive.Portal>
+          {showMask && (
+            <DialogPrimitive.Overlay
+              className={cn('ax-scrim fixed inset-0 z-50', FADE_MOTION)}
+              style={{ zIndex }}
+            />
           )}
-        >
-          {(title || extra || closable) && (
-            <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
-              <DialogPrimitive.Title className="min-w-0 flex-1 text-lg font-semibold text-fg">
-                {title}
-              </DialogPrimitive.Title>
-              <div className="flex shrink-0 items-center gap-1">
-                {extra}
-                {closable && (
-                  <button
-                    type="button"
-                    aria-label="关闭"
-                    onClick={() => onClose?.()}
-                    className="ax-press ax-focus -me-1 inline-flex size-8 items-center justify-center rounded-element text-fg-secondary hover:bg-muted hover:text-fg"
-                  >
-                    <X className="size-4" />
-                  </button>
-                )}
+          <DialogPrimitive.Content
+            aria-describedby={undefined}
+            data-destroy-on-close={destroyOnClose ? '' : undefined}
+            onPointerDownOutside={(e) => {
+              if (!maskClosable) e.preventDefault();
+            }}
+            onEscapeKeyDown={(e) => {
+              if (!keyboard) e.preventDefault();
+            }}
+            style={{
+              zIndex: zIndex ? zIndex + 1 : undefined,
+              ...(isVertical ? { maxHeight: height ?? '85dvh' } : { width }),
+              // 推开用 inset 而不是 transform：transform 已经归动效所有
+              ...(offset ? { [PUSH_EDGE[placement]]: offset } : null),
+              ...style,
+            }}
+            className={cn(
+              'fixed z-50 flex max-w-[100vw] flex-col border-line bg-surface shadow-high outline-none',
+              // 嵌套时压在父层上，靠一条实一点的缝分开，否则两块白面糊成一片
+              !isVertical && (parent ? 'max-w-[92vw] border-s-line-strong' : 'max-w-[92vw] border-s'),
+              isVertical && 'border-t',
+              BOX_CLASS[placement],
+              DRAWER_CLOCK,
+              DRAWER_MOTION[placement],
+              // 推开是 300ms 的位移，和进出场同一个时钟
+              'transition-[top,right,bottom,left] duration-[var(--ax-dur-medium)] ease-standard',
+              rootClassName,
+              className,
+            )}
+          >
+            {(title || extra || closable) && (
+              <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
+                <DialogPrimitive.Title className="min-w-0 flex-1 text-lg font-semibold text-fg">
+                  {title}
+                </DialogPrimitive.Title>
+                <div className="flex shrink-0 items-center gap-1">
+                  {extra}
+                  {closable && (
+                    <button
+                      type="button"
+                      aria-label="关闭"
+                      onClick={() => onClose?.()}
+                      className="ax-press ax-focus -me-1 inline-flex size-8 items-center justify-center rounded-element text-fg-secondary hover:bg-muted hover:text-fg"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  )}
+                </div>
               </div>
+            )}
+            <div
+              className={cn(
+                'flex-1 overflow-y-auto px-5 py-4 text-md leading-relaxed text-fg-secondary',
+                bodyClassName,
+              )}
+            >
+              {children}
             </div>
-          )}
-          <div className={cn('flex-1 overflow-y-auto px-5 py-4 text-md leading-relaxed text-fg-secondary', bodyClassName)}>
-            {children}
-          </div>
-          {footer && (
-            <div className="flex items-center justify-end gap-2 border-t border-line-soft px-5 py-3.5">
-              {footer}
-            </div>
-          )}
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+            {footer && (
+              <div className="flex items-center justify-end gap-2 border-t border-line-soft px-5 py-3.5">
+                {footer}
+              </div>
+            )}
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    </DrawerNestContext.Provider>
   );
 }
 

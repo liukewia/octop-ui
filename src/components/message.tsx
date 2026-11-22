@@ -2,6 +2,7 @@ import { useSyncExternalStore, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { AlertTriangle, CheckCircle2, Info, X, XCircle } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { TOAST_IN } from '../lib/motion';
 
 type NoticeType = 'success' | 'info' | 'warning' | 'error' | 'loading';
 
@@ -99,8 +100,9 @@ function MessageViewport() {
           className={cn(
             // Astryx 原始 Toast：白卡、12 圆角、1px 8% 描边，padding 10/16，
             // 行高 20 → 高度 42。没有配色底、没有图标容器，只有一道极淡的影。
-            'pointer-events-auto flex max-w-[min(520px,100%)] animate-toast-in items-center gap-2',
+            'pointer-events-auto flex max-w-[min(520px,100%)] items-center gap-2',
             'rounded-container border border-line bg-surface px-4 py-2.5 text-base text-fg shadow-toast',
+            TOAST_IN,
           )}
         >
           {item.icon ?? <NoticeIcon type={item.type} />}
@@ -119,7 +121,7 @@ function NotificationViewport() {
         <div
           key={item.id}
           role="status"
-          className="pointer-events-auto w-full animate-toast-in rounded-container border border-line bg-surface px-6 py-3 shadow-toast"
+          className={`pointer-events-auto w-full rounded-container border border-line bg-surface px-6 py-3 shadow-toast ${TOAST_IN}`}
         >
           <div className="flex items-start gap-2.5">
             {item.icon ?? <NoticeIcon type={item.type} />}

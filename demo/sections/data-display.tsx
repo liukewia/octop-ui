@@ -205,7 +205,7 @@ export function DataDisplay() {
           bordered
           dataSource={[
             { title: '换掉 import 就能用', desc: '调用方式不用改', avatar: '林' },
-            { title: '补齐 55 个组件', desc: '表单、表格、日期都自研', avatar: '周' },
+            { title: '补齐 68 个组件', desc: '表单、表格、日期都自研', avatar: '周' },
             { title: '按 C 端调控件高度', desc: '粗指针设备自动到 44', avatar: '陈' },
           ]}
           renderItem={(item: { title: string; desc: string; avatar: string }) => (

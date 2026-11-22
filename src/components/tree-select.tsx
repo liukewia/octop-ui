@@ -2,6 +2,7 @@ import { useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ChevronDown, X } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { POPUP_MOTION } from '../lib/motion';
 import { fieldShell, type SizeType, type StatusType } from '../lib/field';
 import { Tag } from './tag';
 import { Tree, type TreeNodeData } from './tree';
@@ -153,7 +154,7 @@ export function TreeSelect({
           align="start"
           sideOffset={4}
           collisionPadding={8}
-          className="ax-popover z-50 w-[var(--radix-popover-trigger-width)] min-w-[200px] p-2 outline-none data-[state=open]:animate-layer-in"
+          className={`ax-popover z-50 w-[var(--radix-popover-trigger-width)] min-w-[200px] p-2 outline-none ${POPUP_MOTION}`}
         >
           {showSearch && (
             <input

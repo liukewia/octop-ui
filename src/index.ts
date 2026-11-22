@@ -66,3 +66,6 @@ export * from './components/steps';
 export * from './components/pagination';
 export * from './components/anchor';
 export * from './components/float-button';
+
+/* 高级：组合型整块能力 */
+export * from './components/advanced';

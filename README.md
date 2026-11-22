@@ -1,7 +1,7 @@
 # @octop/ui
 
 一套面向 **C 端** 的 React 组件库：底层是 shadcn/ui 的做法（Radix Primitives + Tailwind v4 + CVA），
-皮肤是 Astryx 的十色板与四层令牌。55 个组件共用同一套高度、焦点、按压与浮层时钟，引一次 CSS 就能跑起来。
+皮肤是 Astryx 的十色板与四层令牌。68 个组件（55 个基础 + 13 个高级）共用同一套高度、焦点、按压与浮层时钟，引一次 CSS 就能跑起来。
 
 ```tsx
 import { Button, Select, Modal } from '@octop/ui';
@@ -13,15 +13,16 @@ import '@octop/ui/style.css';
 ```
 
 - **API 形态**：数据驱动的 `items`（Tabs / Collapse / Menu / Steps / Descriptions）、`destroyOnHidden`、`Divider titlePlacement`、`Button iconPosition`、`Modal.xxx` 命令式 API
-- **组件**：55 个文件、约 10.4k 行实现，零运行时主题
-- **产物**：`dist/index.js`（~240KB / gzip 58KB）、`dist/octop-ui.css`（~63KB / gzip 12KB）、完整 `.d.ts`
+- **组件**：65 个文件、68 个导出（55 基础 + 13 高级）、约 12.9k 行实现，零运行时主题
+- **产物**：`dist/index.js`（~284KB / gzip 67KB）、`dist/octop-ui.css`（~72KB / gzip 13KB）、完整 `.d.ts`
+- **动效**：shadcn 的 `animate-in` / `animate-out` 组合类（`tw-animate-css`），时长与曲线仍走 Astryx 令牌
 - **React**：`^18.2 || ^19`，声明为 peer dependency，不打包进产物
 
 **在线展厅**：<https://liukewia.github.io/octop-ui/>（`?theme=dark` 直接进深色）
 
 ![展厅首屏](docs/demo-light.png)
 
-> 展厅（`npm run dev`）按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 六组把 55 个组件铺开，浅色 / 深色 / 390px 窄屏都能直接看。
+> 展厅（`npm run dev`）按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开，浅色 / 深色 / 390px 窄屏都能直接看。
 > 每次 push 到 `main`，`.github/workflows/pages.yml` 会构建并发布到 GitHub Pages。
 
 ---
@@ -35,7 +36,7 @@ import '@octop/ui/style.css';
 | 交互 | 库自带的动效时钟与形态，想改要绕开它 | 我们自己的时钟（95→525ms 七档）与形态 |
 | 依赖 | 组件库本体 + 一长串 rc-* 依赖 | Radix 一组 + cva/clsx/tailwind-merge |
 
-代价是要维护 55 个组件；换来的是「视觉与交互完全可控」和「消费方不用装 Tailwind」。
+代价是要维护 68 个组件；换来的是「视觉与交互完全可控」和「消费方不用装 Tailwind」。
 
 ---
 
@@ -221,9 +222,12 @@ Upload、Transfer、Mentions、Table（sorter/filters/rowSelection/expandable/sc
 Tag/CheckableTag/Badge、Avatar/Avatar.Group、List/List.Item.Meta、Descriptions、Collapse、Timeline、Tree、
 Statistic/Statistic.Countdown、Tooltip/Popover、Empty、Skeleton、Image、Carousel、Calendar、Watermark、
 Alert、message/notification（命令式 + `useMessage`）、Modal/`Modal.confirm|info|success|warning|error`、
-Drawer/DrawerFooter、Popconfirm、Progress、Spin、Result、Tour、
+Drawer/DrawerFooter（含 `push` 多级嵌套）、Popconfirm、Progress、Spin、Result、Tour、
 Menu/Dropdown、Tabs、Breadcrumb、Steps、Pagination、Anchor、FloatButton（含 `.Group`/`.BackTop`）、
-Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Meta、ConfigProvider。
+Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Meta、ConfigProvider、
+
+**高级**：CommandPalette、BottomSheet、ChatMessage/ChatComposer/ChatSystemMessage、
+Citation/CitationList、CodeBlock、OverflowList、SelectionToolbar、HoverCard、StatusDot、Kbd。
 
 ### 与常见做法的选择差异
 
@@ -250,6 +254,79 @@ Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Me
 
 ---
 
+## 动效：shadcn 的写法，Astryx 的时钟
+
+浮层不再各写一份 `@keyframes`，改成 shadcn 那套「开关类」组合：`animate-in` / `animate-out` 两条通道，
+方向、缩放、透明度各是一个独立的类，拼起来才是最终动作。十六处浮层共用 `src/lib/motion.ts` 里的四五个常量。
+
+```tsx
+// 浮层：淡入 + scale(.95) + 贴着锚点那一侧推 8px
+const POPUP_MOTION = [
+  'data-[state=open]:animate-in data-[state=closed]:animate-out',
+  'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
+  'data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95',
+  'data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:slide-in-from-top-2',
+  'data-[state=open]:duration-[var(--ax-dur-fast-max)] data-[state=closed]:duration-[var(--ax-dur-fast)]',
+  'data-[state=open]:ease-standard data-[state=closed]:ease-exit',
+].join(' ');
+```
+
+| 浮层 | 入场 | 退场 |
+| --- | --- | --- |
+| Popover / Select / Dropdown / DatePicker | 165ms：淡入 + `scale(.95)` + 贴锚点 8px | 125ms |
+| Tooltip | 125ms：淡入 + 4px | 125ms |
+| Dialog / Modal | 400ms：淡入 + `scale(.95)` + 上浮 16px | 125ms：收到 `.98` |
+| Drawer | 300ms：整块滑入（不缩放） | 225ms |
+| BottomSheet / 窄屏 Modal | 300ms：自底向上 100% | 225ms |
+| Toast | 125ms：自上方 8px 落下 | — |
+
+- 方向类用的是 `data-[side=*]`：Select 在上方弹出就从下方推入，不需要 JS 判断 placement。
+- 时长走 `duration-[var(--ax-dur-*)]`，所以「95 / 125 / 165 / 225 / 300 / 400 / 525」这套时钟没有变成魔数。
+- `tw-animate-css` 只在构建期用（CSS 已经预编译进 `dist/octop-ui.css`），消费方不需要装 Tailwind 或这个包。
+- 全局 `prefers-reduced-motion` 仍然生效：动画时长压到 1ms，Radix 会在下一帧卸载浮层。
+
+## 多级抽屉
+
+只借鉴 `Drawer` 的嵌套写法与 `push` 参数，样式按这里的规范来：子层打开时父层沿同一方向让出 `distance`，而不是被盖住。
+
+```tsx
+<Drawer open={open} onClose={close} title="项目详情" width={520} push={{ distance: 180 }}>
+  …
+  <Drawer open={members} onClose={closeMembers} title="成员" width={380}>
+    …
+    <Drawer open={perms} onClose={closePerms} title="权限" width={300}>
+      …
+    </Drawer>
+  </Drawer>
+</Drawer>
+```
+
+- `push` 默认 `{ distance: 180 }`，`false` 关闭；推开用 `inset`（left/right/top/bottom）而不是 `transform`，避免和进出场动画抢同一个属性。
+- **子层默认不再叠遮罩**：页面已经被最外层的遮罩压暗，第三层再压两次会把前两层抹黑。需要时显式传 `mask`。
+- 关掉子层，父层自动归位；`Esc` 只关最上面一层（Radix 的 layer 栈），点父层空白也会关掉子层。
+- 嵌套层级压在父层上时，左边描边会升到 `line-strong`，否则两块白面糊成一片。
+
+## 高级组件
+
+`src/components/advanced/` —— 在基础组件之上组合出来的一整块能力。基础组件没有为它们改样式。
+
+| 组件 | 主要 API | 说明 |
+| --- | --- | --- |
+| CommandPalette | `items` / `groups` / `open` / `hotkey` / `filter` / `onSelect` | ⌘K 命令面板：分组、禁用项、快捷键、键盘走位 |
+| BottomSheet | `open` / `height`（`auto\|half\|full` / px）/ `showHandle` / `dragToClose` | 底部抽屉，抓手可下拉关闭（>96px） |
+| ChatMessage | `role` / `name` / `avatar` / `status` / `actions` / `loading` | 用户反相气泡、助手留白；操作条悬停才出 |
+| ChatComposer | `value` / `onChange` / `onSend` / `loading` / `onStop` / `footer` | 自适应高度；Enter 发送、组词期间回车不误发 |
+| ChatSystemMessage | `children` / `divider` | 居中系统提示 |
+| Citation / CitationList | `index` / `title` / `url`；`items` / `columns` | 正文上标引用 + 来源列表 |
+| CodeBlock | `code` / `language` / `title` / `copyable` / `showLineNumbers` / `maxHeight` | 行号与复制，长代码内部滚动 |
+| OverflowList | `items` / `renderItem` / `maxCount` / `moreRender` / `onMoreClick` | 真实测量宽度后收进「+N」 |
+| SelectionToolbar | `count` / `open` / `onClear` / `children` / `extra` | 批量操作浮条，数量用反相胶囊 |
+| HoverCard | `title` / `content` / `openDelay` / `closeDelay` | 悬停卡，鼠标能从触发点移进卡片 |
+| StatusDot | `status` / `text` / `pulse` / `size` / `color` | 状态点，`processing` 自带呼吸环 |
+| Kbd | `keys` / `separator` / `size` | 键帽：1px 描边 + 底部 2px 读厚度 |
+
+---
+
 ## 设计基座
 
 四层结构，从下往上：
@@ -257,7 +334,8 @@ Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Me
 1. **令牌**：`:root` / `.dark` 上的 `--ax-*`（面、字、线、accent、语义色、十色板、圆角、高度、时钟、影）。
 2. **映射**：`@theme inline` 把令牌变成 Tailwind 语义类（`bg-surface` / `text-fg-secondary` / `rounded-element` / `ease-standard`）。
 3. **修正**：`@layer components` 里的 `.ax-*`（两套焦点、按压叠色、字段壳、浮层、遮罩、spinner、骨架）。
-4. **组件**：只写语义类，不出现十六进制、不出现 `ms` 字面量。
+4. **动效**：utilities 层的 `animate-in/out` 组合（见上节），常量集中在 `src/lib/motion.ts`。
+5. **组件**：只写语义类，不出现十六进制、不出现 `ms` 字面量。
 
 ### 时钟
 
@@ -292,12 +370,14 @@ Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Me
 ```
 src/
   index.ts               全量导出（按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 分组）
-  styles/index.css       唯一的 CSS 源：令牌 + @theme + 组件层 + keyframes
+  styles/index.css       唯一的 CSS 源：令牌 + @theme + 组件层 + 两枚自造 keyframe
   lib/
     cn.ts                clsx + tailwind-merge、omitUndefined、statusToInvalid
     hooks.ts             useControllableState / useMeasure / useMediaQuery / useRestoreFocus
     field.ts             控件壳（height/text/pad/variant → fieldShell）
-  components/            55 个组件文件
+    motion.ts            浮层的进出场类名：popup / tooltip / dialog / sheet / drawer
+  components/            55 个基础组件文件
+    advanced/            13 个高级导出（命令面板、底部抽屉、会话、引用、代码块…）
 demo/
   App.tsx                展厅外壳（顶栏 / 侧栏 / hero）
   sections/*.tsx         按分类的展示页

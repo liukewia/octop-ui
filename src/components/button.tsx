@@ -94,7 +94,7 @@ function Spinner({ delay = 225 }: { delay?: number }) {
   return (
     <span
       aria-hidden
-      className="ax-spinner inline-block size-4 animate-[ax-fade-in_125ms_var(--ax-ease-standard)_225ms_both]"
+      className="ax-spinner inline-block size-4 animate-in fade-in-0 fill-mode-both delay-[225ms] duration-[var(--ax-dur-fast)] ease-standard"
       style={delay === 0 ? { animationDelay: '0ms' } : undefined}
     />
   );

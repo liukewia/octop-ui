@@ -190,7 +190,7 @@ export function Tabs({
             value={item.key}
             forceMount={keepMounted ? true : undefined}
             hidden={keepMounted && current !== item.key ? true : undefined}
-            className={cn('outline-none', current === item.key && 'animate-fade-in')}
+            className={cn('outline-none', current === item.key && 'animate-in fade-in-0 duration-[var(--ax-dur-fast)] ease-standard')}
           >
             {item.children}
           </TabsPrimitive.Content>

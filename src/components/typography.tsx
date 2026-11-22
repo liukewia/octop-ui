@@ -43,14 +43,31 @@ function textClasses(props: BaseTextProps) {
 }
 
 export const Text = forwardRef<HTMLSpanElement, BaseTextProps>(function Text(
-  { className, type, ellipsis, style, ...rest },
+  {
+    className,
+    type,
+    ellipsis,
+    style,
+    strong,
+    italic,
+    underline,
+    delete: del,
+    code,
+    mark,
+    keyboard,
+    disabled,
+    ...rest
+  },
   ref,
 ) {
   const rows = typeof ellipsis === 'object' ? ellipsis.rows : undefined;
   return (
     <span
       ref={ref}
-      className={cn(textClasses({ ...rest, type, ellipsis }), className)}
+      className={cn(
+        textClasses({ type, strong, italic, underline, delete: del, code, mark, keyboard, disabled, ellipsis }),
+        className,
+      )}
       style={rows ? ({ '--ax-rows': rows, ...style } as React.CSSProperties) : style}
       {...rest}
     />
@@ -58,14 +75,32 @@ export const Text = forwardRef<HTMLSpanElement, BaseTextProps>(function Text(
 });
 
 export const Paragraph = forwardRef<HTMLParagraphElement, BaseTextProps>(function Paragraph(
-  { className, type, ellipsis, style, ...rest },
+  {
+    className,
+    type,
+    ellipsis,
+    style,
+    strong,
+    italic,
+    underline,
+    delete: del,
+    code,
+    mark,
+    keyboard,
+    disabled,
+    ...rest
+  },
   ref,
 ) {
   const rows = typeof ellipsis === 'object' ? ellipsis.rows : undefined;
   return (
     <p
       ref={ref}
-      className={cn('my-0 leading-relaxed', textClasses({ ...rest, type, ellipsis }), className)}
+      className={cn(
+        'my-0 leading-relaxed',
+        textClasses({ type, strong, italic, underline, delete: del, code, mark, keyboard, disabled, ellipsis }),
+        className,
+      )}
       style={rows ? ({ '--ax-rows': rows, ...style } as React.CSSProperties) : style}
       {...rest}
     />

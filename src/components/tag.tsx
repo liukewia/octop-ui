@@ -80,17 +80,26 @@ export const Tag = forwardRef<HTMLSpanElement, TagProps>(function Tag(
       {icon}
       <span className="truncate">{children}</span>
       {closable && (
-        <button
-          type="button"
+        // 用 span + role 而不是 button：标签经常嵌在 Select 的触发器（本身就是 button）里，
+        // 再套一层 button 是非法 HTML，浏览器会把内层提出来，点击也会串到外层。
+        <span
+          role="button"
+          tabIndex={0}
           aria-label="移除"
           onClick={(e) => {
             e.stopPropagation();
             onClose?.(e);
           }}
-          className="ax-focus -me-0.5 inline-flex size-3.5 shrink-0 items-center justify-center rounded-full opacity-70 hover:opacity-100"
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            e.stopPropagation();
+            onClose?.(e as unknown as React.MouseEvent<HTMLElement>);
+          }}
+          className="ax-focus -me-0.5 inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full opacity-70 hover:opacity-100"
         >
           <X className="size-3" />
-        </button>
+        </span>
       )}
     </span>
   );

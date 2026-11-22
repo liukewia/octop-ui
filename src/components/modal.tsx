@@ -4,6 +4,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { Button } from './button';
+import { DIALOG_MOTION, FADE_MOTION, SHEET_MOTION } from '../lib/motion';
 
 export interface ModalProps {
   open?: boolean;
@@ -90,7 +91,7 @@ const ModalRoot = function Modal({
     >
       <DialogPrimitive.Portal container={getContainer || undefined}>
         <DialogPrimitive.Overlay
-          className="ax-scrim fixed inset-0 z-50 animate-fade-in data-[state=closed]:opacity-0"
+          className={`ax-scrim fixed inset-0 z-50 ${FADE_MOTION}`}
           style={{ zIndex, ...maskStyle }}
         />
         <DialogPrimitive.Content
@@ -113,12 +114,12 @@ const ModalRoot = function Modal({
             'fixed z-50 h-fit max-h-[calc(100dvh-48px)] w-[min(var(--modal-w,480px),calc(100vw-32px))] overflow-hidden',
             centered ? 'inset-0 m-auto' : 'inset-x-0 top-[10vh] mx-auto',
             'rounded-container border border-line bg-surface shadow-high outline-none',
-            'data-[state=open]:animate-dialog-in data-[state=closed]:animate-dialog-out',
+            sheet ? SHEET_MOTION : DIALOG_MOTION,
             // C 端：窄屏从底部升起，圆角只留上面两角
             'max-sm:inset-x-0 max-sm:bottom-0 max-sm:top-auto max-sm:m-0 max-sm:max-h-[85dvh] max-sm:w-full max-sm:rounded-b-none max-sm:rounded-t-page',
-            'max-sm:data-[state=open]:animate-sheet-in max-sm:data-[state=closed]:animate-dialog-out',
+            !sheet && 'max-sm:data-[state=open]:zoom-in-100 max-sm:data-[state=open]:slide-in-from-bottom max-sm:data-[state=open]:duration-[var(--ax-dur-medium)] max-sm:data-[state=closed]:slide-out-to-bottom',
             sheet && 'inset-x-0 bottom-0 top-auto m-0 w-full rounded-b-none rounded-t-page',
-            sheet && 'data-[state=open]:animate-sheet-in',
+            
             className,
           )}
         >

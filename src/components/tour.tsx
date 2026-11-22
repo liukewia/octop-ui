@@ -104,7 +104,7 @@ export function Tour({
     <div className="fixed inset-0 z-[900]" role="dialog" aria-modal aria-label={typeof step.title === 'string' ? step.title : '引导'}>
       {step.mask !== false && (
         <div
-          className="absolute inset-0 animate-fade-in bg-black/55"
+          className="absolute inset-0 animate-in fade-in-0 bg-black/55 duration-[var(--ax-dur-fast)] ease-standard"
           onClick={() => maskClosable && onClose?.()}
           style={
             rect
@@ -134,7 +134,7 @@ export function Tour({
       <div
         ref={cardRef}
         className={cn(
-          'absolute w-[min(320px,calc(100vw-32px))] animate-layer-in rounded-container border border-line bg-surface p-4 shadow-high',
+          'absolute w-[min(320px,calc(100vw-32px))] animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 rounded-container border border-line bg-surface p-4 shadow-high duration-[var(--ax-dur-fast-max)] ease-standard',
           className,
         )}
         style={{ ...cardStyle, ...style }}

@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ChevronDown, ChevronUp, Filter, ListFilter } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { POPUP_MOTION } from '../lib/motion';
 import { Checkbox } from './checkbox';
 import { Empty } from './empty';
 import { Pagination } from './pagination';
@@ -288,7 +289,7 @@ export function Table<T extends object>({
                                   side="bottom"
                                   align="end"
                                   sideOffset={4}
-                                  className="ax-popover z-50 min-w-[160px] p-1.5 outline-none data-[state=open]:animate-layer-in"
+                                  className={`ax-popover z-50 min-w-[160px] p-1.5 outline-none ${POPUP_MOTION}`}
                                 >
                                   <div className="flex flex-col">
                                     {column.filters.map((option) => {

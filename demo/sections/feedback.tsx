@@ -179,7 +179,7 @@ export function Feedback() {
             onClick={() =>
               Modal.info({
                 title: '关于',
-                content: 'Octop UI v0.1.0 · 55 个组件',
+                content: 'Octop UI v0.2.0 · 68 个组件',
               })
             }
           >

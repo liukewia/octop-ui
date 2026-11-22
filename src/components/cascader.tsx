@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ChevronRight, X } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { POPUP_MOTION } from '../lib/motion';
 import { fieldShell, type SizeType, type StatusType } from '../lib/field';
 
 export type CascaderValue = (string | number)[];
@@ -176,7 +177,7 @@ export function Cascader({
           align="start"
           sideOffset={4}
           collisionPadding={8}
-          className="ax-popover z-50 flex max-w-[calc(100vw-32px)] overflow-hidden p-0 outline-none data-[state=open]:animate-layer-in"
+          className={`ax-popover z-50 flex max-w-[calc(100vw-32px)] overflow-hidden p-0 outline-none ${POPUP_MOTION}`}
         >
           {columns.map((column, columnIndex) => (
             <div

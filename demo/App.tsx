@@ -7,6 +7,7 @@ import { DataEntry } from './sections/data-entry';
 import { DataDisplay } from './sections/data-display';
 import { Feedback } from './sections/feedback';
 import { Navigation } from './sections/navigation';
+import { Advanced } from './sections/advanced';
 import { Moon, Search, Sun } from './icons';
 
 const NAV = [
@@ -20,6 +21,7 @@ const NAV = [
       { id: 'data-display', label: '数据展示', count: '18' },
       { id: 'feedback', label: '反馈', count: '10' },
       { id: 'navigation', label: '导航', count: '7' },
+      { id: 'advanced', label: '高级', count: '11' },
     ],
   },
 ];
@@ -112,7 +114,7 @@ export default function App() {
               </button>
             </Tooltip>
             <span className="ml-1 inline-flex h-8 items-center rounded-full bg-accent px-3 text-base font-medium whitespace-nowrap text-on-accent">
-              v0.1.0
+              v0.2.0
             </span>
           </div>
         </header>
@@ -169,7 +171,7 @@ export default function App() {
                   把熟悉的组件 API，换成 C 端的皮肤
                 </h1>
                 <p className="mb-5 flex flex-wrap items-center gap-2 text-xs text-fg-tertiary">
-                  <code className="font-mono text-xs">55 个组件 · 10.4k 行</code>
+                  <code className="font-mono text-xs">68 个组件 · 12.9k 行</code>
                   <span>·</span>
                   <code className="font-mono text-xs">Radix + Tailwind v4 + CVA</code>
                   <span>·</span>
@@ -219,6 +221,7 @@ import '@octop/ui/style.css';`}
               <DataDisplay />
               <Feedback />
               <Navigation />
+              <Advanced />
             </div>
           </main>
         </div>

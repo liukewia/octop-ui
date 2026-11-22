@@ -1,6 +1,7 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cn } from '../lib/cn';
+import { POPUP_MOTION, TOOLTIP_MOTION } from '../lib/motion';
 
 export type Placement =
   | 'top'
@@ -81,7 +82,7 @@ export function Tooltip({
             className={cn(
               // Astryx 真站 tooltip：28 高、12 圆角、4/8 内边距、无箭头、无描边，暗色反相
               'z-50 max-w-[320px] select-none rounded-container bg-accent px-2 py-1 text-base leading-5 text-on-accent shadow-pop',
-              'data-[state=delayed-open]:animate-layer-in data-[state=instant-open]:animate-fade-in',
+              TOOLTIP_MOTION,
               overlayClassName,
             )}
           >
@@ -144,7 +145,7 @@ export function Popover({
           className={cn(
             // 唯一没有描边的浮层：边界交给两档近距影，暗色靠 inset 白环当轮廓
             'ax-popover-soft z-50 inline-block w-max max-w-[min(420px,calc(100vw-32px))] p-3 outline-none',
-            'data-[state=open]:animate-layer-in data-[state=closed]:animate-layer-out',
+            POPUP_MOTION,
             flush && 'p-0',
             overlayClassName,
           )}

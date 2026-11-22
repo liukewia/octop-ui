@@ -3,6 +3,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { useControllableState } from '../lib/hooks';
+import { POPUP_MOTION } from '../lib/motion';
 
 export type MenuItemType =
   | {
@@ -258,7 +259,7 @@ export function Dropdown({
           onCloseAutoFocus={(e) => e.preventDefault()}
           className={cn(
             'ax-popover z-50 min-w-[180px] p-1 outline-none',
-            'data-[state=open]:animate-layer-in data-[state=closed]:animate-layer-out',
+            POPUP_MOTION,
             overlayClassName,
           )}
         >

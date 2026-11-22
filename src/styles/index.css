@@ -12,6 +12,8 @@
    ============================================================================= */
 
 @import 'tailwindcss';
+/* shadcn 的动效工具：animate-in / animate-out + fade / zoom / slide 开关组合 */
+@import 'tw-animate-css';
 
 @source '../**/*.{ts,tsx}';
 @source '../../demo/**/*.{ts,tsx}';
@@ -327,86 +329,14 @@
   --text-4xl: 42px;
   --text-4xl--line-height: 52px;
 
-  --animate-layer-in: ax-layer-in var(--ax-dur-fast-max) var(--ax-ease-standard) both;
-  --animate-layer-out: ax-layer-out var(--ax-dur-fast) var(--ax-ease-exit) both;
-  --animate-fade-in: ax-fade-in var(--ax-dur-fast) var(--ax-ease-standard) both;
-  --animate-dialog-in: ax-dialog-in var(--ax-dur-medium-max) var(--ax-ease-standard) both;
-  --animate-dialog-out: ax-dialog-out var(--ax-dur-fast) var(--ax-ease-exit) both;
-  --animate-sheet-in: ax-sheet-in var(--ax-dur-medium) var(--ax-ease-standard) both;
-  --animate-toast-in: ax-toast-in var(--ax-dur-fast) var(--ax-ease-standard) both;
+  /* 浮层动效不在这里定义：交给 animate-in / animate-out（见 lib/motion.ts），
+     本文件只留两枚自己做不出来、也不需要组合的循环动画。 */
   --animate-spin-arc: ax-spin-arc var(--ax-dur-spin) linear infinite;
   --animate-breathe: ax-breathe var(--ax-dur-medium-max) steps(10, end) infinite alternate;
 }
 
 /* --------------------------------------------------------------- 关键帧 */
 
-@keyframes ax-layer-in {
-  from {
-    opacity: 0;
-    transform: translateY(var(--ax-layer-y, -8px)) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-@keyframes ax-layer-out {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(var(--ax-layer-y, -4px)) scale(0.98);
-  }
-}
-@keyframes ax-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-/* 弹窗：Astryx 是 scale(.95) + 16px 的「落位」，不是 scale(.2) 的「弹出」 */
-@keyframes ax-dialog-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes ax-dialog-out {
-  from {
-    opacity: 1;
-    transform: none;
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-}
-@keyframes ax-sheet-in {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-@keyframes ax-toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(var(--ax-toast-y, -8px));
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 @keyframes ax-spin-arc {
   to {
     transform: rotate(1turn);

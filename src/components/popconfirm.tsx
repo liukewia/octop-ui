@@ -2,6 +2,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cn } from '../lib/cn';
 import { Button } from './button';
 import { SIDE, type Placement } from './tooltip';
+import { POPUP_MOTION } from '../lib/motion';
 
 export interface PopconfirmProps {
   title?: React.ReactNode;
@@ -59,7 +60,7 @@ export function Popconfirm({
           collisionPadding={8}
           className={cn(
             'ax-popover-soft z-50 w-[240px] p-3 outline-none',
-            'data-[state=open]:animate-layer-in data-[state=closed]:animate-layer-out',
+            POPUP_MOTION,
             overlayClassName,
           )}
         >

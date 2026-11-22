@@ -2,6 +2,7 @@ import { useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X, ZoomIn } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { DIALOG_MOTION, FADE_MOTION } from '../lib/motion';
 
 export interface ImagePreviewConfig {
   visible?: boolean;
@@ -86,11 +87,11 @@ export function Image({
       {previewable && (
         <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
           <DialogPrimitive.Portal>
-            <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/85 backdrop-blur-sm data-[state=open]:animate-fade-in" />
+            <DialogPrimitive.Overlay className={`fixed inset-0 z-[1000] bg-black/85 backdrop-blur-sm ${FADE_MOTION}`} />
             <DialogPrimitive.Content
               aria-describedby={undefined}
               aria-label={alt || '图片预览'}
-              className="fixed inset-0 z-[1000] grid place-items-center p-6 outline-none data-[state=open]:animate-dialog-in"
+              className={`fixed inset-0 z-[1000] grid place-items-center p-6 outline-none ${DIALOG_MOTION}`}
               onClick={() => setOpen(false)}
             >
               <img
