@@ -1,6 +1,6 @@
 {
   "name": "@octop/ui",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Astryx-flavoured React UI kit for C-end products, built on shadcn/ui (Radix + Tailwind v4)",
   "license": "MIT",
   "type": "module",

@@ -72,3 +72,6 @@ export * from './components/advanced';
 
 /* Agent 模板：对话 / 步骤 / 来源 / 确认 */
 export * from './components/agent';
+
+/* 主题：可视化编辑器 + 令牌推导 */
+export * from './components/theme';

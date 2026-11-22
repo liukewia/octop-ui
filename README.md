@@ -1,7 +1,7 @@
 # @octop/ui
 
 一套面向 **C 端** 的 React 组件库：底层是 shadcn/ui 的做法（Radix Primitives + Tailwind v4 + CVA），
-皮肤是 Astryx 的十色板与四层令牌。68 个组件（55 个基础 + 13 个高级）共用同一套高度、焦点、按压与浮层时钟，引一次 CSS 就能跑起来。
+皮肤是 Astryx 的十色板与四层令牌。68 个组件（55 个基础 + 13 个高级）共用同一套高度、焦点、按压与浮层时钟，引一次 CSS 就能跑起来；再带一个可视化主题编辑器，五个旋钮改完立刻热更。
 
 ```tsx
 import { Button, Select, Modal } from '@octop/ui';
@@ -14,7 +14,7 @@ import '@octop/ui/style.css';
 
 - **API 形态**：数据驱动的 `items`（Tabs / Collapse / Menu / Steps / Descriptions）、`destroyOnHidden`、`Divider titlePlacement`、`Button iconPosition`、`Modal.xxx` 命令式 API
 - **组件**：79 个文件、68 个基础导出（55 基础 + 13 高级）+ 19 个 Agent 模板导出、约 14.5k 行实现，零运行时主题
-- **产物**：`dist/index.js`（~339KB / gzip 79KB）、`dist/octop-ui.css`（~94KB / gzip 17KB）、完整 `.d.ts`
+- **产物**：`dist/index.js`（~364KB / gzip 86KB）、`dist/octop-ui.css`（~95KB / gzip 17KB）、完整 `.d.ts`
 - **动效**：shadcn 的 `animate-in` / `animate-out` 组合类（`tw-animate-css`），时长与曲线仍走 Astryx 令牌
 - **React**：`^18.2 || ^19`，声明为 peer dependency，不打包进产物
 
@@ -22,10 +22,10 @@ import '@octop/ui/style.css';
 
 ![展厅首屏](docs/demo-light.png)
 
-> 展厅（`npm run dev`）顶栏分 **组件 / 场景 / Agent** 三个视图：组件视图按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开；场景视图拼出 6 个业务页面；Agent 视图再补 6 屏「过程可见」的界面。三个视图都验过浅色 / 深色 / 390px 窄屏。
+> 展厅（`npm run dev`）顶栏分 **组件 / 场景 / Agent / 主题** 四个视图：组件视图按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开；场景视图拼出 6 个业务页面；Agent 视图再补 6 屏「过程可见」的界面；主题视图是可热更的令牌编辑器。四个视图都验过浅色 / 深色 / 390px 窄屏。
 > 每次 push 到 `main`，`.github/workflows/pages.yml` 会构建并发布到 GitHub Pages。
 
-场景视图用 `?view=scenes&scene=<id>` 定位，可以直接把某一块发给同事：
+场景视图用 `?view=scenes&scene=<id>` 定位，可以直接把某一块发给同事（主题视图是 `?view=theme`）：
 
 | 场景 | 看点 | 主要组件 |
 | --- | --- | --- |
@@ -610,6 +610,69 @@ import {
 
 ---
 
+## 主题：五个旋钮，推出一整套令牌
+
+`src/components/theme/` —— 一个可视化主题编辑器，加上它背后的推导函数。左边五个旋钮
+（基础色 / 主色 / 圆角 / 字体 / 密度），右边是真实组件拼出来的预览；改完立刻生效，
+刷新还在，导出的 CSS 可以直接贴进别的项目。
+
+![主题编辑器](docs/demo-theme.png)
+
+```tsx
+import {
+  DEFAULT_THEME, ThemeEditor, applyTheme, readStoredTheme, storeTheme, themeToCss,
+} from '@octop/ui';
+import type { ThemeConfig } from '@octop/ui';
+
+const [theme, setTheme] = useState<ThemeConfig | null>(() => readStoredTheme());
+
+// 用 layout effect：先写 <style> 再出首帧，刷新不会闪一下默认皮肤
+useLayoutEffect(() => {
+  applyTheme(theme); // 传 null 就恢复库默认
+  storeTheme(theme);
+}, [theme]);
+
+<ThemeEditor
+  value={theme ?? DEFAULT_THEME}
+  onChange={setTheme}
+  onReset={() => setTheme(null)}
+  mode={mode}
+  onModeChange={setMode}
+/>;
+```
+
+| 导出 | 用途 | 主要参数 |
+| --- | --- | --- |
+| `ThemeEditor` | 控制面板（不含预览，预览由调用方拼） | `value` / `onChange` / `onReset` / `mode` / `onModeChange` / `presets` |
+| `deriveTheme` | 只算令牌，不落盘 | `config` → `{ light, dark }` |
+| `themeToCss` | 生成可粘贴的 CSS | `config` → `string` |
+| `applyTheme` | 运行时热更；`null` 还原 | `config \| null` |
+| `readStoredTheme` / `storeTheme` | 本地持久化（带校验） | — |
+| `THEME_PRESETS` / `DEFAULT_THEME` / `THEME_BASES` / `THEME_ACCENTS` / `THEME_FONTS` | 预设与候选值 | — |
+
+四个取舍：
+
+**推导在 JS，产物是 CSS。** 旋钮算出来的是一张 `--ax-*` 表，`applyTheme` 把它写成 `<style>`
+里的 `html:root` 与 `html.dark`。选择器比库里的 `:root` / `.dark` 多一层类型选择器，
+无论这段样式插在哪个位置都盖得住默认值，又不会把深色一起盖掉 —— 热更不闪、不与原样式打架，
+靠的就是这一层。
+
+**只覆盖该覆盖的。** 面、字、线、accent、圆角、控件高度、字体进主题；`danger` / `success` /
+`warning` / `info` 与十色板留在库里。状态色的可读性是底线，不该被「换个主色」顺带带走。
+
+**主色不只一个值。** hover 由主色混白 / 混黑推出（浅色下暗主色提亮、亮主色压深），
+`accent-soft` 用 `color-mix(in oklab, var(--ax-accent) 12%, var(--ax-surface))` 跟表面走，
+`on-accent` 按 WCAG 相对亮度在黑 / 白之间选。深色模式下近黑的主色会翻成 12% 白的浅色 ——
+否则单色主题的按钮会陷进背景里。
+
+**中性色是明度阶，不是五套十六进制。** 五个基底只改 oklch 的 hue / chroma：画布 96.6%、
+次级字 38 / 50 / 64.5，深色 22 / 26 / 17。所以「暖石」「青苔」改的是色相，不是对比度。
+
+展厅里这套就是主题视图（`?view=theme`）：改完切回组件视图，整站已经换了皮肤；
+文档里写死的 `radius 6 / 10 / 12 / 28` 也跟着令牌走（`applyTheme` 会广播一次 `octop:theme`）。
+
+---
+
 ## 设计基座
 
 四层结构，从下往上：
@@ -661,8 +724,11 @@ src/
     motion.ts            浮层的进出场类名：popup / tooltip / dialog / sheet / drawer
   components/            55 个基础组件文件
     advanced/            13 个高级导出（命令面板、底部抽屉、会话、引用、代码块…）
+    agent/               19 个 Agent 模板导出（气泡 / 步骤 / 来源 / 流式 / 联网搜索…）
+    theme/               主题引擎：令牌推导 + 可视化编辑器
 demo/
   App.tsx                展厅外壳（顶栏 / 侧栏 / hero）
+  theme-studio.tsx       主题视图（面板 + 三种预览）
   sections/*.tsx         按分类的展示页
   primitives.tsx         Section / Demo / Row / Stack / Hint
 ```
@@ -673,6 +739,7 @@ demo/
 - `npm run build`：类型声明 + 库产物，无外部依赖被打包（全部 external）
 - `npm run demo:build` + `demo:preview`：展厅可静态化，浅色 / 深色 / 390px 窄屏三套都在盯
 - GitHub Pages：<https://liukewia.github.io/octop-ui/> — push `main` 自动构建发布，线上浅色 / 深色均已核对
+- 主题：五套预设 × 浅色 / 深色逐一截图；改主色、圆角、密度、字体后刷新仍在，`重置` 能清掉 `<style>` 与 localStorage
 
 ## License
 

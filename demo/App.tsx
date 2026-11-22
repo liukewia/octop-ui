@@ -1,5 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ConfigProvider, Tooltip } from '../src';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { ConfigProvider, Tooltip, applyTheme, readStoredTheme, storeTheme } from '../src';
+import type { ThemeConfig } from '../src';
+import { ThemeStudio } from './theme-studio';
+import { useLiveTokens } from './live-tokens';
 import { Foundations } from './sections/foundations';
 import { General } from './sections/general';
 import { LayoutSection } from './sections/layout';
@@ -38,6 +41,7 @@ const VIEWS = [
   { id: 'components', label: '组件' },
   { id: 'scenes', label: '场景' },
   { id: 'agent', label: 'Agent' },
+  { id: 'theme', label: '主题' },
 ] as const;
 
 type ViewId = (typeof VIEWS)[number]['id'];
@@ -62,14 +66,22 @@ export default function App() {
   );
   const [view, setView] = useState<ViewId>(() => {
     const v = new URLSearchParams(window.location.search).get('view');
-    return v === 'scenes' || v === 'agent' ? v : 'components';
+    return v === 'scenes' || v === 'agent' || v === 'theme' ? v : 'components';
   });
   const [active, setActive] = useState('foundations');
   const [query, setQuery] = useState('');
+  const [theme, setTheme] = useState<ThemeConfig | null>(() => readStoredTheme());
+  const tokens = useLiveTokens();
 
   useEffect(() => {
     document.documentElement.style.colorScheme = mode;
   }, [mode]);
+
+  // 用 layout effect：读到本地主题后先写进 <style> 再出首帧，刷新不会闪一下默认皮肤
+  useLayoutEffect(() => {
+    applyTheme(theme);
+    storeTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     if (view !== 'components') return;
@@ -142,7 +154,7 @@ export default function App() {
                 onClick={() => go(v.id)}
                 data-active={view === v.id}
                 aria-current={view === v.id ? 'page' : undefined}
-                className="ax-focus inline-flex h-7 items-center rounded-full px-3 text-sm text-fg-secondary transition-[background-color,color,box-shadow] duration-[125ms] ease-standard hover:text-fg data-[active=true]:bg-surface data-[active=true]:font-medium data-[active=true]:text-fg data-[active=true]:shadow-pop"
+                className="ax-focus inline-flex h-7 items-center rounded-full px-3 text-sm text-fg-secondary transition-[background-color,color,box-shadow] duration-[125ms] ease-standard hover:text-fg data-[active=true]:bg-surface data-[active=true]:font-medium data-[active=true]:text-fg data-[active=true]:shadow-pop max-sm:px-2 max-sm:text-xs"
               >
                 {v.label}
               </button>
@@ -161,7 +173,7 @@ export default function App() {
               </button>
             </Tooltip>
             <span className="ml-1 hidden h-8 items-center rounded-full bg-accent px-3 text-base font-medium whitespace-nowrap text-on-accent sm:inline-flex">
-              v0.6.0
+              v0.7.0
             </span>
           </div>
         </header>
@@ -170,6 +182,13 @@ export default function App() {
           <Scenes />
         ) : view === 'agent' ? (
           <AgentScenes />
+        ) : view === 'theme' ? (
+          <ThemeStudio
+            theme={theme}
+            onThemeChange={setTheme}
+            mode={mode}
+            onModeChange={setMode}
+          />
         ) : (
           <div className="flex items-start max-md:block">
             <aside className="sticky top-12 flex h-[calc(100vh-48px)] w-[260px] flex-none flex-col overflow-hidden p-2 max-md:static max-md:h-auto max-md:w-auto max-md:border-b max-md:border-line">
@@ -223,7 +242,7 @@ export default function App() {
                     把熟悉的组件 API，换成 C 端的皮肤
                   </h1>
                   <p className="mb-5 flex flex-wrap items-center gap-2 text-xs text-fg-tertiary">
-                    <code className="font-mono text-xs">68 个组件 · 12.9k 行</code>
+                    <code className="font-mono text-xs">68 个组件 · 14.9k 行</code>
                     <span>·</span>
                     <code className="font-mono text-xs">Radix + Tailwind v4 + CVA</code>
                     <span>·</span>
@@ -258,10 +277,10 @@ import '@octop/ui/style.css';`}
                       </span>
                     ))}
                     <span className="inline-flex h-6 items-center rounded-full bg-canvas px-2.5 text-xs text-fg-tertiary tabular-nums">
-                      radius 6 / 10 / 12 / 28
+                      radius {tokens.radius.join(' / ')}
                     </span>
                     <span className="inline-flex h-6 items-center rounded-full bg-canvas px-2.5 text-xs text-fg-tertiary tabular-nums">
-                      h 40 / 44 coarse
+                      h {tokens.heights.join(' / ')}
                     </span>
                     <button
                       type="button"
@@ -276,6 +295,13 @@ import '@octop/ui/style.css';`}
                       className="ax-focus inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-fg underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-fg"
                     >
                       五个 Agent 场景 →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => go('theme')}
+                      className="ax-focus inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-fg underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-fg"
+                    >
+                      主题编辑器 →
                     </button>
                   </div>
                 </header>

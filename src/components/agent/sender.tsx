@@ -145,7 +145,7 @@ export function AgentSender({
           event.preventDefault();
           submit();
         }}
-        className="w-full resize-none border-0 bg-transparent px-1.5 pt-1 text-md leading-relaxed text-fg outline-none placeholder:text-fg-disabled"
+        className="w-full resize-none border-0 bg-transparent px-1.5 pt-1 text-md leading-relaxed text-fg outline-none placeholder:text-fg-tertiary"
       />
 
       <div className="flex items-center gap-1">

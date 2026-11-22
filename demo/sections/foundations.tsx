@@ -1,5 +1,6 @@
 import { Demo, Hint, Row, Section, Stack } from '../primitives';
 import { Button, Tag } from '../../src';
+import { useLiveTokens } from '../live-tokens';
 
 const SURFACES = [
   { name: 'bg', value: 'var(--ax-bg)', note: '页面' },
@@ -43,6 +44,8 @@ const CLOCKS = [
 ];
 
 export function Foundations() {
+  const { radius } = useLiveTokens();
+
   return (
     <Section
       id="foundations"
@@ -98,13 +101,13 @@ export function Foundations() {
         </Stack>
       </Demo>
 
-      <Demo label="形状" code="radius 6 / 10 / 12 / 28" dir="block">
+      <Demo label="形状" code={`radius ${radius.join(' / ')}`} dir="block">
         <Row className="items-end">
           {[
-            { r: 'var(--ax-radius-inner)', n: 'inner 6' },
-            { r: 'var(--ax-radius-element)', n: 'element 10' },
-            { r: 'var(--ax-radius-container)', n: 'container 12' },
-            { r: 'var(--ax-radius-page)', n: 'page 28' },
+            { r: 'var(--ax-radius-inner)', n: `inner ${radius[0]}` },
+            { r: 'var(--ax-radius-element)', n: `element ${radius[1]}` },
+            { r: 'var(--ax-radius-container)', n: `container ${radius[2]}` },
+            { r: 'var(--ax-radius-page)', n: `page ${radius[3]}` },
           ].map((x) => (
             <Stack key={x.n} className="w-auto items-center gap-1.5">
               <div
