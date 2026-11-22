@@ -44,13 +44,14 @@ Agent 视图用 `?view=agent&agent=<id>` 定位。它解决的不是「怎么聊
 
 | 场景 | 看点 | 主要组件 |
 | --- | --- | --- |
+| `chat` 对话模板 | 一条完整的排查对话：思考流式写入、工具调用、带引用的回答、需要确认的下一步 | AgentBubble / AgentSender / AgentReasoning / AgentTool / AgentSources / AgentConfirmation |
 | `trace` 运行轨迹 | 规划 / 检索 / 工具 / 重试 / 审批逐步展开，带耗时与 token | StatusDot / Tabs / CodeBlock / Alert |
 | `approval` 工具审批 | 计划、影响面、回滚脚本摆在一张卡上，二次确认才执行 | Drawer / Descriptions / Collapse / Checkbox |
 | `team` 多 Agent | 主控与三个子 Agent 的分工、预算、交接记录 | Progress / Avatar / Popconfirm / Segmented |
 | `builder` 编排配置 | 提示 / 工具 / 知识库 / 预算，右侧实时算代价 | Input / TextArea / Select / Slider / Switch |
 | `evals` 评测对比 | v3 与 v4 逐条 diff，回归用例单独标红 | Table 展开行 / Statistic / CodeBlock |
 
-这五屏同样只消费 `src/` 的导出；为了让「暂停 / 继续 / 审批 / 终止」都有真实反馈，交互状态全部写在场景组件内部，库代码没有为 demo 增加过 props。
+这六屏同样只消费 `src/` 的导出；为了让「暂停 / 继续 / 审批 / 终止」都有真实反馈，交互状态全部写在场景组件内部，库代码没有为 demo 增加过 props。
 
 ![Agent 场景](docs/demo-agent.png)
 
@@ -260,6 +261,10 @@ Layout（Header/Sider/Content/Footer）、Row/Col/Grid、Splitter、Card/Card.Me
 **高级**：CommandPalette、BottomSheet、ChatMessage/ChatComposer/ChatSystemMessage、
 Citation/CitationList、CodeBlock、OverflowList、SelectionToolbar、HoverCard、StatusDot、Kbd。
 
+**Agent 模板**：AgentBubble / AgentActions / AgentSender / AgentPrompts / AgentWelcome /
+AgentThoughtChain / AgentReasoning / AgentTool / AgentSources / AgentInlineCitation /
+AgentConfirmation / AgentPlan / AgentContext / AgentModelSelector / AgentChat。
+
 **工具类**：`scroll-fade`（含 `-x/-y/-t/-b/-l/-r/-s/-e`、尺寸档、`-none`）、
 `shimmer`（含 `-once/-reverse/-none`、`duration/spread/angle` 档）。
 
@@ -415,7 +420,7 @@ const POPUP_MOTION = [
 | --- | --- | --- |
 | CommandPalette | `items` / `groups` / `open` / `hotkey` / `filter` / `onSelect` | ⌘K 命令面板：分组、禁用项、快捷键、键盘走位 |
 | BottomSheet | `open` / `height`（`auto\|half\|full` / px）/ `showHandle` / `dragToClose` | 底部抽屉，抓手可下拉关闭（>96px） |
-| ChatMessage | `role` / `name` / `avatar` / `status` / `actions` / `loading` | 用户反相气泡、助手留白；操作条悬停才出 |
+| ChatMessage | `role` / `name` / `avatar` / `status` / `actions` / `loading` | 最小写法的气泡；现在是 `AgentBubble` 的门面，要 header/footer/typing 直接用后者 |
 | ChatComposer | `value` / `onChange` / `onSend` / `loading` / `onStop` / `footer` | 自适应高度；Enter 发送、组词期间回车不误发 |
 | ChatSystemMessage | `children` / `divider` | 居中系统提示 |
 | Citation / CitationList | `index` / `title` / `url`；`items` / `columns` | 正文上标引用 + 来源列表 |
@@ -425,6 +430,80 @@ const POPUP_MOTION = [
 | HoverCard | `title` / `content` / `openDelay` / `closeDelay` | 悬停卡，鼠标能从触发点移进卡片 |
 | StatusDot | `status` / `text` / `pulse` / `size` / `color` | 状态点，`processing` 自带呼吸环 |
 | Kbd | `keys` / `separator` / `size` | 键帽：1px 描边 + 底部 2px 读厚度 |
+
+---
+
+## Agent 模板：shadcn 的 AI Elements，antd 的 API
+
+`src/components/agent/` —— 对应 shadcn 的 [AI Elements](https://ui.shadcn.com/docs/ai-elements)：
+对话、步骤、来源、确认这几块「模式」。shadcn 那边是复制进项目的组合，这里做成了可直接 import 的组件。
+视觉仍走 Astryx（留白、细描边、单色 accent），API 沿用 antd / ant-design-x 的命名：
+`items` / `placement` / `status` / `onSubmit` / `onItemClick`，状态值用 antd Steps 的那一套。
+
+| AI Elements | 这里 | 主要 API |
+| --- | --- | --- |
+| Message / Bubble | `AgentBubble` | `placement`（start/end）、`content`、`header`、`footer`、`avatar`、`loading`、`typing`、`variant`、`shape` |
+| Prompt Input | `AgentSender` | `value`、`onChange`、`onSubmit`、`onCancel`、`loading`、`attachments`、`header`、`prefix`、`actions`、`footer`、`submitType` |
+| Reasoning | `AgentReasoning` | `content`、`loading`、`duration`、`title`、`open` |
+| Tool | `AgentTool` | `name`、`status`、`input`、`output`、`error`、`duration`、`defaultOpen` |
+| Trace | `AgentThoughtChain` | `items`（`title` / `description` / `icon` / `status` / `content`）、`collapsible`、`line`、`onExpand` |
+| Chain of Thought / Task | 同上 | 一步一行，展开看细节；计划和任务都用同一副骨架 |
+| Sources | `AgentSources` | `items`（`title` / `url` / `domain` / `snippet`）、`columns` |
+| Inline Citation | `AgentInlineCitation` | `index`、`title`、`snippet`、`url` |
+| Confirmation | `AgentConfirmation` | `tool`、`params`、`status`（pending/approved/denied）、`onApprove`、`onDeny`、`danger` |
+| Plan | `AgentPlan` | `items`（`status` 含 `skipped`）、`progress`、`strikeDone` |
+| Context | `AgentContext` | `used`、`total`、`segments`、`warnAt`、`showLabel` |
+| Model Selector | `AgentModelSelector` | `models`、`value`、`onChange`、`efforts`、`effort`、`onEffortChange`、`compact` |
+| Suggestion | `AgentPrompts` | `items`（`label` / `description` / `icon`）、`columns`、`vertical`、`onItemClick` |
+| — | `AgentWelcome` | `icon`、`title`、`description`、`items` |
+| Chat | `AgentChat` | `AgentChat.Header` / `.Body` / `.Footer` |
+| Message actions | `AgentActions` | `items`（`label` / `icon` / `danger`）、`variant`、`size`、`fadeIn` |
+
+状态沿用 antd Steps 的写法：`pending | running | success | error`，同时认 `wait / process / finish` 三个旧名，
+所以从 `<Steps status="process">` 迁过来不用改字符串。
+
+```tsx
+import {
+  AgentActions, AgentBubble, AgentChat, AgentConfirmation, AgentContext,
+  AgentInlineCitation, AgentReasoning, AgentSender, AgentSources, AgentTool,
+} from '@octop/ui';
+
+<AgentBubble placement="end" content={question} />
+
+<AgentBubble
+  placement="start"
+  content={<span>卡在图片优化这一步<AgentInlineCitation index={1} title="部署缓存键" url="https://…" />。</span>}
+  footer={<AgentActions items={[{ key: 'copy', icon: <Copy className="size-3.5" />, tooltip: '复制' }]} />}
+/>
+
+<AgentReasoning loading={thinking} duration={5} content={reasoningText} />
+<AgentTool name="ci.pipeline_runs" status="success" input={{ branch: 'main' }} output={logs} />
+<AgentSources items={sources} />
+<AgentConfirmation tool="db.migrate" params={params} onApprove={run} onDeny={skip} />
+
+<AgentChat className="h-[600px]">
+  <AgentChat.Header title="Octop Agent" extra={<AgentContext used={42000} total={200000} showLabel={false} className="w-24" />} />
+  <AgentChat.Body>{messages}</AgentChat.Body>
+  <AgentChat.Footer>
+    <AgentSender value={text} onChange={setText} onSubmit={send} loading={running} onCancel={stop} />
+  </AgentChat.Footer>
+</AgentChat>
+```
+
+四个不显然的处理：
+
+1. **助手那侧不加边框**。用户靠反相实底表态，Agent 靠留白表态 —— 长回答不会被一个圆角框反复切断；
+   需要边界时再传 `variant="outlined"`。
+2. **步骤的竖线接在图标之间**，不是贯穿整条列表：最后一行没有线，「下面还有」这件事由线本身说，
+   不需要再加一层「加载更多」。
+3. **`AgentChat.Body` 自己记住用户有没有往上翻**：贴底时新消息自动跟进，用户往上翻就暂停，
+   回到底部再恢复。滚动监听只在容器上挂一个 passive listener，内容高度用 ResizeObserver 看。
+4. **`ChatMessage` 变成了 `AgentBubble` 的门面**：库里只有一套气泡排版，`role` / `name` / `status`
+   这些旧参数照旧可用。
+
+和 antd-x 的差异：`ThoughtChain` 这里拆成了三件 —— `AgentThoughtChain`（骨架）、`AgentReasoning`（思考）、
+`AgentTool`（工具）；`Sender` 的 `submitType` 只保留 `enter` / `shiftEnter`，没有做语音转文字，
+`allowSpeech` 只负责回调。`Conversations`（会话列表）没做 —— 它更像导航而不是 Agent 模板的一部分。
 
 ---
 

@@ -1,13 +1,22 @@
 import { useEffect, useState } from 'react';
-import { ClipboardCheck, FlaskConical, GitBranch, ListTree, Network, Settings2 } from 'lucide-react';
+import { ClipboardCheck, FlaskConical, GitBranch, ListTree, MessagesSquare, Network, Settings2 } from 'lucide-react';
 import { cn } from '../../../src/lib/cn';
 import { AgentApprovalScene } from './approval';
+import { AgentChatScene } from './chat';
 import { AgentBuilderScene } from './builder';
 import { AgentEvalsScene } from './evals';
 import { AgentRunTraceScene } from './run-trace';
 import { AgentTeamScene } from './team';
 
 const AGENT_SCENES = [
+  {
+    id: 'chat',
+    label: '对话模板',
+    icon: <MessagesSquare className="size-3.5" />,
+    desc: '一条真实的排查对话：思考流式写入、工具调用、带引用的回答、需要确认的下一步。左侧是消息，右侧是计划与预算。',
+    parts: ['AgentBubble', 'AgentSender', 'AgentReasoning', 'AgentTool', 'AgentSources', 'AgentConfirmation', 'AgentPlan', 'AgentContext'],
+    render: () => <AgentChatScene />,
+  },
   {
     id: 'trace',
     label: '运行轨迹',
@@ -78,7 +87,7 @@ export function AgentScenes() {
         </h1>
         <p className="m-0 mt-2 max-w-[720px] text-sm leading-relaxed text-fg-secondary sm:text-md">
           Agent 产品的难点从来不是聊天气泡，而是它现在在干什么、为什么停下、要你确认什么、花了多少钱。
-          下面五屏都在回答这四个问题。
+          下面六屏都在回答这四个问题。
         </p>
       </header>
 

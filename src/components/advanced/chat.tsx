@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUp, Paperclip, Sparkles, Square, User } from 'lucide-react';
+import { ArrowUp, Paperclip, Square } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { AgentBubble } from '../agent/bubble';
 import { Button } from '../button';
 
 export type ChatRole = 'user' | 'assistant';
@@ -31,23 +32,10 @@ const STATUS_TEXT: Record<NonNullable<ChatMessageProps['status']>, string> = {
   error: '发送失败',
 };
 
-function DefaultAvatar({ role }: { role: ChatRole }) {
-  const Icon = role === 'user' ? User : Sparkles;
-  return (
-    <span
-      className={cn(
-        'inline-flex size-7 flex-none items-center justify-center rounded-full',
-        role === 'user' ? 'bg-muted text-fg-secondary' : 'bg-accent text-on-accent',
-      )}
-    >
-      <Icon className="size-3.5" />
-    </span>
-  );
-}
-
 /**
- * 一条消息：用户靠反相气泡表态，助手靠留白表态。
- * 操作条默认藏起来（触屏常显），因为 C 端的消息是一串一串读的，不是一条一条改的。
+ * 一条消息的最小写法：role + content。
+ * 需要 header / footer / typing / variant 时直接用 AgentBubble —— 这里只是它的一个门面，
+ * 省得库里有第二种气泡排版。
  */
 export function ChatMessage({
   role = 'assistant',
@@ -63,62 +51,33 @@ export function ChatMessage({
   style,
 }: ChatMessageProps) {
   const isUser = role === 'user';
-  const body = content ?? children;
+  const hasMeta = !!(name || time || status);
 
   return (
-    <div
-      data-role={role}
-      className={cn('group flex w-full min-w-0 items-start gap-2.5', isUser && 'flex-row-reverse', className)}
-      style={style}
-    >
-      {avatar !== false && <div className="mt-0.5">{avatar ?? <DefaultAvatar role={role} />}</div>}
-
-      <div className={cn('flex min-w-0 max-w-[min(560px,88%)] flex-col gap-1', isUser && 'items-end')}>
-        {(name || time || status) && (
-          <div className={cn('flex items-center gap-1.5 text-xs text-fg-tertiary', isUser && 'justify-end')}>
+    <AgentBubble
+      placement={isUser ? 'end' : 'start'}
+      avatar={avatar}
+      loading={loading}
+      content={content ?? children}
+      header={
+        hasMeta ? (
+          <>
             {name && <span className="font-medium text-fg-secondary">{name}</span>}
             {time && <span className="tabular-nums">{time}</span>}
-            {status && (
-              <span className={cn(status === 'error' && 'text-danger')}>{STATUS_TEXT[status]}</span>
-            )}
-          </div>
-        )}
-
-        <div
-          className={cn(
-            'min-w-0 text-md leading-relaxed',
-            isUser
-              ? 'rounded-container rounded-ee-inner bg-accent px-3.5 py-2.5 text-on-accent'
-              : 'text-fg',
-          )}
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-1 py-1" aria-label="正在生成">
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  className="size-1.5 animate-bounce rounded-full bg-fg-disabled"
-                  style={{ animationDelay: `${i * 120}ms`, animationDuration: '900ms' }}
-                />
-              ))}
-            </span>
-          ) : (
-            body
-          )}
-        </div>
-
-        {actions && (
-          <div
-            className={cn(
-              'flex items-center gap-1 text-fg-tertiary transition-opacity duration-[125ms] ease-standard focus-within:opacity-100 sm:opacity-0 sm:group-hover:opacity-100',
-              isUser && 'flex-row-reverse',
-            )}
-          >
+            {status && <span className={cn(status === 'error' && 'text-danger')}>{STATUS_TEXT[status]}</span>}
+          </>
+        ) : undefined
+      }
+      footer={
+        actions ? (
+          <span className="flex items-center gap-1 transition-opacity duration-[125ms] ease-standard focus-within:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
             {actions}
-          </div>
-        )}
-      </div>
-    </div>
+          </span>
+        ) : undefined
+      }
+      className={className}
+      style={style}
+    />
   );
 }
 

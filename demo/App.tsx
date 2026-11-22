@@ -8,6 +8,7 @@ import { DataDisplay } from './sections/data-display';
 import { Feedback } from './sections/feedback';
 import { Navigation } from './sections/navigation';
 import { Advanced } from './sections/advanced';
+import { AgentTemplate } from './sections/agent-template';
 import { Utilities } from './sections/utilities';
 import { Scenes } from './scenes';
 import { AgentScenes } from './scenes/agent';
@@ -25,6 +26,7 @@ const NAV = [
       { id: 'feedback', label: '反馈', count: '10' },
       { id: 'navigation', label: '导航', count: '7' },
       { id: 'advanced', label: '高级', count: '11' },
+      { id: 'agent-template', label: 'Agent 模板', count: '15' },
       { id: 'utilities', label: '工具类', count: '2' },
     ],
   },
@@ -159,7 +161,7 @@ export default function App() {
               </button>
             </Tooltip>
             <span className="ml-1 hidden h-8 items-center rounded-full bg-accent px-3 text-base font-medium whitespace-nowrap text-on-accent sm:inline-flex">
-              v0.4.0
+              v0.5.0
             </span>
           </div>
         </header>
@@ -286,6 +288,7 @@ import '@octop/ui/style.css';`}
                 <Feedback />
                 <Navigation />
                 <Advanced />
+                <AgentTemplate />
                 <Utilities />
               </div>
             </main>

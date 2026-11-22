@@ -69,3 +69,6 @@ export * from './components/float-button';
 
 /* 高级：组合型整块能力 */
 export * from './components/advanced';
+
+/* Agent 模板：对话 / 步骤 / 来源 / 确认 */
+export * from './components/agent';

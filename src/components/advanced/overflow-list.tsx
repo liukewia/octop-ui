@@ -93,7 +93,8 @@ export function OverflowList<T>({
   );
 
   return (
-    <div ref={rootRef} className={cn('relative w-full min-w-0', className)} style={style}>
+    // overflow-x-clip：量具是 w-max 的绝对定位元素，不裁掉会把整页撑宽
+    <div ref={rootRef} className={cn('relative w-full min-w-0 overflow-x-clip', className)} style={style}>
       {/* 量具：同字号同间距排一遍，只读宽度，不参与交互 */}
       <div
         aria-hidden
