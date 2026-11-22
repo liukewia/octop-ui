@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import dayjs, { type Dayjs } from 'dayjs';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Eye, Lock, Plus, Search as SearchIcon, UploadCloud } from 'lucide-react';
 import {
   Button,
@@ -8,16 +11,22 @@ import {
   CheckboxGroup,
   DatePicker,
   Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
   Input,
   InputNumber,
   Mentions,
+  message,
   Radio,
   RadioGroup,
   Rate,
   Segmented,
   Select,
   Slider,
-  Space,
   Switch,
   Text,
   TimePicker,
@@ -98,6 +107,134 @@ const TREE = [
     ],
   },
 ];
+
+/* --------------------------------------------------------------- 表单示例 */
+
+const bugSchema = z.object({
+  title: z
+    .string()
+    .min(5, '标题至少 5 个字。')
+    .max(32, '标题最多 32 个字。'),
+  description: z
+    .string()
+    .min(20, '描述至少 20 个字。')
+    .max(100, '描述最多 100 个字。'),
+  severity: z.enum(['blocker', 'normal', 'minor']),
+  notify: z.boolean(),
+});
+
+type BugValues = z.infer<typeof bugSchema>;
+
+function BugReportForm() {
+  const form = useForm<BugValues>({
+    resolver: zodResolver(bugSchema),
+    defaultValues: { title: '', description: '', severity: 'normal', notify: true },
+    mode: 'onTouched',
+  });
+
+  function onSubmit(values: BugValues) {
+    message.success(`已提交：${values.title}`);
+    // eslint-disable-next-line no-console
+    console.log(values);
+  }
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex w-full max-w-[520px] flex-col gap-4"
+      >
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>标题</FormLabel>
+              <FormControl>
+                <Input placeholder="比如：抽屉关闭后焦点没回到触发按钮" {...field} />
+              </FormControl>
+              <FormMessage />
+              <FormDescription>一句话说清「在哪儿、做了什么、发生了什么」。</FormDescription>
+            </FormItem>
+          )}
+        />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="severity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required>严重程度</FormLabel>
+                <FormControl>
+                  <Select
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { label: '阻塞发布', value: 'blocker' },
+                      { label: '影响使用', value: 'normal' },
+                      { label: '小瑕疵', value: 'minor' },
+                    ]}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="notify"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>修复后通知我</FormLabel>
+                <div className="flex h-10 items-center">
+                  <FormControl>
+                    <Switch checked={field.value} onChange={(next) => field.onChange(next)} />
+                  </FormControl>
+                  <span className="ms-3 text-xs text-fg-tertiary">有新进展时发信</span>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>复现步骤</FormLabel>
+              <FormControl>
+                <TextArea
+                  rows={3}
+                  maxLength={100}
+                  showCount
+                  placeholder="1. 打开结算页  2. 连点两次提交  3. 订单创建了两笔……"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex items-center gap-3">
+          <Button type="primary" htmlType="submit">
+            提交工单
+          </Button>
+          <Button htmlType="button" onClick={() => form.reset()}>
+            重置
+          </Button>
+          <span className="ms-auto text-xs text-fg-tertiary">
+            {form.formState.isDirty ? '有未提交的修改' : '尚未修改'}
+          </span>
+        </div>
+      </form>
+    </Form>
+  );
+}
 
 export function DataEntry() {
   const [count, setCount] = useState(0);
@@ -319,51 +456,13 @@ export function DataEntry() {
         <Hint>滑块 225ms 落位；宽度用 ResizeObserver 测量，标签换语言也不会错位。</Hint>
       </Demo>
 
-      <Demo label="表单" code="Form / Form.Item" span="full" dir="column">
-        <Form
-          layout="vertical"
-          initialValues={{ name: '', email: '', plan: 'pro', notify: true }}
-          onFinish={(v) => {
-            // eslint-disable-next-line no-console
-            console.log('submit', v);
-          }}
-        >
-          <Form.Item
-            name="name"
-            label="项目名称"
-            rules={[{ required: true, message: '请填项目名称' }, { max: 20, message: '不超过 20 字' }]}
-          >
-            <Input placeholder="比如 Octop UI" />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label="通知邮箱"
-            rules={[{ required: true, message: '请填邮箱' }, { type: 'email', message: '邮箱格式不对' }]}
-          >
-            <Input placeholder="hi@octop.dev" />
-          </Form.Item>
-          <Form.Item name="plan" label="套餐">
-            <Select
-              options={[
-                { label: '基础版', value: 'free' },
-                { label: '专业版', value: 'pro' },
-                { label: '企业版', value: 'ent' },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name="notify" label="变更时通知我" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit">
-              提交
-            </Button>
-            <Button htmlType="reset">重置</Button>
-          </Space>
-        </Form>
+      <Demo label="表单" code="Form + react-hook-form + zod" span="full" dir="column">
+        <BugReportForm />
         <Hint>
-          Form 是自研 store：支持 <code>a.b</code> 与数组路径、<code>Form.useWatch</code>、校验规则
-          required/min/max/len/pattern/type/validator。
+          <code>&lt;Form&gt;</code> 只是 <code>FormProvider</code>，校验交给 zod：
+          <code>FormField</code> 包一层 <code>Controller</code>，
+          <code>FormControl</code> 把 id / aria-invalid / aria-describedby 注给控件，
+          <code>FormMessage</code> 读同一份字段状态，所以错误样式和读屏软件永远同步。
         </Hint>
       </Demo>
 

@@ -73,6 +73,8 @@ Agent 视图用 `?view=agent&agent=<id>` 定位。它解决的不是「怎么聊
 
 ```bash
 npm i @octop/ui            # 或指向 git tag，见下一节
+npm i react-hook-form      # 表单要用；必须和库共用同一份实例，故列为 peer
+npm i zod @hookform/resolvers   # 用 zod 做校验时
 ```
 
 ```tsx
@@ -222,13 +224,13 @@ onSearch={(value, event, { source }) => {}}
 
 ### 4. TypeScript
 
-类型是手写的，不依赖第三方类型包。常用的都直接导出：
+类型基本都是手写的（只有表单的字段类型借 `react-hook-form` / `zod` 推断）。常用的都直接导出：
 
 ```tsx
 import type {
   ColumnType, TableProps, SortOrder, Key,
   SelectOption, SelectProps,
-  FormRule, FormInstance, NamePath,
+  FormFieldProps, FormItemProps, FormLabelProps, UseFormFieldReturn,
   TabItem, MenuItemType, StepItem, TreeNodeData,
   UploadFile, TransferItem, CascaderOption,
 } from '@octop/ui';
@@ -246,7 +248,7 @@ Button（type/size/shape/block/danger/ghost/loading/icon/iconPosition/htmlType/h
 Space（含 `Space.Compact`）、Flex、Typography（Text/Paragraph/Title/Link）、Divider（`orientation` 与 `titlePlacement` 都收）、
 Input（含 `TextArea`/`Password`/`Search`/`OTP`）、InputNumber、Select（options/mode/labelInValue/showSearch/filterOption/tokenSeparators/maxTagCount）、
 Cascader、TreeSelect、DatePicker（含 `DatePicker.RangePicker`、`DatePicker.TimePicker`）、Checkbox/CheckboxGroup、Radio/RadioGroup、
-Switch、Slider、Rate、Segmented、Form/Form.Item/Form.List/Form.useForm/Form.useWatch、
+Switch、Slider、Rate、Segmented、Form/FormField/FormItem/FormLabel/FormControl/FormDescription/FormMessage、
 Upload、Transfer、Mentions、Table（sorter/filters/rowSelection/expandable/scroll/sticky/pagination）、
 Tag/CheckableTag/Badge、Avatar/Avatar.Group、List/List.Item.Meta、Descriptions、Collapse、Timeline、Tree、
 Statistic/Statistic.Countdown、Tooltip/Popover、Empty、Skeleton、Image、Carousel、Calendar、Watermark、
@@ -280,6 +282,73 @@ Citation/CitationList、CodeBlock、OverflowList、SelectionToolbar、HoverCard�
 - 虚拟滚动（Table / Tree / Select）：业务侧一页 ≤50 行，测量成本高于收益。
 - 国际化文案包：组件内文案（"暂无数据""确 定/取消"）目前是中文常量，未接 locale。
 - 服务端渲染的水合细节：demo 是纯 CSR；SSR 场景需要确认 `window` 访问（当前都做了 `typeof document` 保护）。
+
+---
+
+## 表单：shadcn 的 API，Astryx 的错误块
+
+表单不再自带 store。`<Form>` 就是 `react-hook-form` 的 `FormProvider`，校验交给 zod schema，
+组件只做一件事：把字段状态翻译成 Astryx 的排版、错误块和 aria 属性。
+
+```tsx
+const schema = z.object({
+  title: z.string().min(5, '标题至少 5 个字。').max(32, '标题最多 32 个字。'),
+  description: z.string().min(20, '描述至少 20 个字。'),
+});
+
+export function BugReportForm() {
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: { title: '', description: '' },
+    mode: 'onTouched',
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit((v) => console.log(v))} className="flex flex-col gap-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>标题</FormLabel>
+              <FormControl>
+                <Input placeholder="比如：抽屉关闭后焦点没回到触发按钮" {...field} />
+              </FormControl>
+              <FormMessage />
+              <FormDescription>一句话说清在哪儿、做了什么、发生了什么。</FormDescription>
+            </FormItem>
+          )}
+        />
+        <Button type="primary" htmlType="submit">提交</Button>
+      </form>
+    </Form>
+  );
+}
+```
+
+| 部件 | 职责 |
+| --- | --- |
+| `Form` | `FormProvider`，把 `form` 实例放进 context |
+| `FormField` | 包一层 `Controller`，把 `name` 塞进 context，下游自己取错误 |
+| `FormItem` | 排版（`layout="vertical" \| "horizontal"`）+ 生成 `id`，并按 `data-invalid` / `data-has-message` 打标 |
+| `FormLabel` | `<label htmlFor>` 指向控件的真实 id，必填只画星号（是否必填以 schema 为准） |
+| `FormControl` | `Slot`：把 `id` / `aria-invalid` / `aria-describedby` 注给唯一子元素 |
+| `FormDescription` / `FormMessage` | 说明与错误，`id` 与上面的 aria 一一对应 |
+| `useFormField()` | 自定义控件用：拿 `invalid` / `error` / 三个 id |
+
+错误样式只在一处写：`[data-slot='form-item'][data-invalid] .ax-field` 描红，`[data-has-message]` 时把输入框下面两角削平，
+于是红色的 `FormMessage` 像贴在控件下沿的一小块——Input / TextArea / Select 都不需要各自再记 `status`。
+
+从 antd 写法迁过来的对照：
+
+| 旧 | 新 |
+| --- | --- |
+| `<Form.Item name rules={[{ required, min, max, pattern }]}>` | zod schema + `<FormField render>` |
+| `initialValues` | `useForm({ defaultValues })` |
+| `onFinish` / `onFinishFailed` | `form.handleSubmit(onSubmit, onInvalid)` |
+| `Form.useForm()` / `Form.useWatch()` | `useForm()` / `form.watch()`（直接来自 react-hook-form） |
+| `valuePropName="checked"` | 自己在 render 里 `checked={field.value} onChange={field.onChange}` |
 
 ---
 

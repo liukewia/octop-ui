@@ -71,6 +71,9 @@ export interface SelectProps {
   prefix?: React.ReactNode;
   /** 透传给触发器的 aria-label */
   'aria-label'?: string;
+  /** 表单场景：由 FormControl 注入 */
+  'aria-describedby'?: string;
+  'aria-invalid'?: boolean | 'true' | 'false';
   autoFocus?: boolean;
 }
 
@@ -437,6 +440,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
           aria-haspopup="listbox"
           aria-activedescendant={open && activeIndex >= 0 ? `${triggers}-option-${activeIndex}` : undefined}
           aria-label={aria['aria-label']}
+          aria-describedby={aria['aria-describedby']}
+          aria-invalid={aria['aria-invalid']}
           disabled={disabled}
           autoFocus={autoFocus}
           onKeyDown={onKeyDown}

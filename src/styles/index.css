@@ -493,6 +493,21 @@
     color: var(--ax-fg-disabled);
   }
 
+  /* ---- 表单错误态：由 FormItem 的 data-invalid 统一驱动，
+         这样 Input / Select / TextArea 都不用各自记 status ---- */
+  [data-slot='form-item'][data-invalid] .ax-field {
+    border-color: var(--ax-danger);
+  }
+  [data-slot='form-item'][data-invalid] .ax-field:focus-within {
+    border-color: var(--ax-danger);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ax-danger) 10%, transparent);
+  }
+  /* 错误块贴在控件下面，只留上面两角 */
+  [data-slot='form-item'][data-has-message] .ax-field {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
   /* ---- 浮层：影 + 描边，圆角 container ---- */
   .ax-popover {
     background: var(--ax-surface);
