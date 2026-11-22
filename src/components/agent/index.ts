@@ -13,5 +13,7 @@ export * from './plan';
 export * from './prompts';
 export * from './sender';
 export * from './sources';
+export * from './streaming';
 export * from './trace';
 export * from './welcome';
+export * from './web-search';

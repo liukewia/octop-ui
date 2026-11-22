@@ -913,6 +913,111 @@
   }
 }
 
+/* =========================================================================
+   Agent · 流式落字
+   -------------------------------------------------------------------------
+   新字从虚焦里长出来（blur 5px → 0），并且先在「落字色」上停一拍再回到
+   正文字色。颜色用 color-mix 在落字色与继承色之间插值 —— 注册成 number
+   属性，关键帧才能把它从 1 平滑推到 0。
+
+   · 没有给 --ax-stream-ink 时，两个颜色本来就是同一个，等于不过渡
+   · 行尾的光点用 currentColor 画，落字色跟着一起变
+   ========================================================================= */
+
+@property --ax-stream-ink-mix {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes ax-stream-in {
+  from {
+    filter: blur(3.5px);
+    opacity: 0.45;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes ax-stream-ink {
+  from {
+    --ax-stream-ink-mix: 1;
+  }
+  to {
+    --ax-stream-ink-mix: 0;
+  }
+}
+
+@keyframes ax-stream-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1.42);
+    opacity: 1;
+  }
+}
+
+@keyframes ax-stream-in-plain {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 一阵字：虚焦长出 + 落字色淡回正文色 */
+.ax-stream-fresh {
+  color: color-mix(in oklab, var(--ax-stream-ink, currentColor) calc(var(--ax-stream-ink-mix) * 100%), currentColor);
+  animation:
+    ax-stream-in 360ms var(--ax-ease-standard) both,
+    ax-stream-ink 720ms linear both;
+}
+
+/* 行内代码自己带底色，虚焦会把色块一起糊开 —— 只淡入，不虚焦 */
+.ax-stream-fresh-plain {
+  animation-name: ax-stream-in-plain, ax-stream-ink;
+}
+
+/* 行尾的光点：不是光标，是「字从这里长出来」的位置 */
+.ax-stream-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-inline-start: 2px;
+  border-radius: 9999px;
+  background: currentColor;
+  vertical-align: 0.14em;
+  box-shadow: 0 0 0 3px color-mix(in oklab, currentColor 16%, transparent);
+  animation: ax-stream-pulse 1.15s var(--ax-ease-standard) infinite;
+}
+
+/* 搜索条上的站点图标：平时叠成一小摞，指针放上去散开（用负外边距，胶囊会自己变宽） */
+.ax-fan-item {
+  margin-inline-start: -6px;
+  transition: margin-inline-start 240ms var(--ax-ease-standard);
+}
+
+.ax-fan-item:first-child {
+  margin-inline-start: 0;
+}
+
+.ax-fan:hover .ax-fan-item,
+.ax-fan:has(:focus-visible) .ax-fan-item {
+  margin-inline-start: 2px;
+}
+
+.ax-fan:hover .ax-fan-item:first-child,
+.ax-fan:has(:focus-visible) .ax-fan-item:first-child {
+  margin-inline-start: 0;
+}
+
+
 /* 预编译发布时没有消费方的 Tailwind 扫描，常用的尺寸档位在这里显式生成一份 */
 @source inline(
   "scroll-fade scroll-fade-y scroll-fade-x scroll-fade-t scroll-fade-b scroll-fade-l scroll-fade-r scroll-fade-s scroll-fade-e scroll-fade-{4,6,8,12,16,24} shimmer shimmer-once shimmer-reverse shimmer-duration-{800,1000,1200} shimmer-spread-{4,8,16,24} shimmer-angle-{0,45,90}"

@@ -22,13 +22,17 @@ import {
   AgentReasoning,
   AgentSender,
   AgentSources,
+  AgentStreamingResponse,
   AgentThoughtChain,
   AgentTool,
+  AgentWebSearch,
+  AgentWebSearchAnswer,
+  AgentWebSearchCitation,
   AgentWelcome,
   Button,
   Tag,
 } from '../../src';
-import type { AgentConfirmStatus } from '../../src';
+import type { AgentConfirmStatus, AgentStreamStatus } from '../../src';
 import { Demo, Hint, Section, Stack } from '../primitives';
 
 const MODELS = [
@@ -281,6 +285,192 @@ function SourcesDemo() {
   );
 }
 
+const STREAM_TEXT = `卡在 **图片优化** 这一步，它占了整条流水线的 62%。
+
+- \`image optimize\` 每次都是全量重跑
+- 缓存键里带了 \`GIT_SHA\`，命中率 0%
+- 另外两步（install 38s、next build 52s）都正常
+
+把缓存键从 commit hash 换成 \`lockfile + public/images\`，构建时间应该回到 1m50s 左右，产物不变。细节见 [RFC-118](https://example.com/rfc/118)。`;
+
+function StreamingDemo() {
+  const [run, setRun] = useState(0);
+  const [text, setText] = useState('');
+  const [status, setStatus] = useState<AgentStreamStatus>('streaming');
+  const [rated, setRated] = useState<string | null>(null);
+  const stopped = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 模拟模型吐 token：一截一截来、长度不匀，偶尔顿一下
+  useEffect(() => {
+    let alive = true;
+    let chars = 0;
+    stopped.current = false;
+    setText('');
+    setStatus('streaming');
+    setRated(null);
+
+    const tick = () => {
+      if (!alive || stopped.current) return;
+      chars = Math.min(STREAM_TEXT.length, chars + 2 + Math.floor(Math.random() * 8));
+      setText(STREAM_TEXT.slice(0, chars));
+      if (chars >= STREAM_TEXT.length) {
+        setStatus('done');
+        return;
+      }
+      timer.current = setTimeout(tick, 60 + Math.random() * 110);
+    };
+
+    timer.current = setTimeout(tick, 520);
+    return () => {
+      alive = false;
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [run]);
+
+  return (
+    <Stack className="w-full gap-3">
+      <AgentStreamingResponse
+        text={text}
+        status={status}
+        ink="var(--ax-accent)"
+        onRetry={() => setRun((v) => v + 1)}
+        onFeedback={(value) => setRated(value)}
+      />
+      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
+        <Button size="small" onClick={() => setRun((v) => v + 1)}>
+          重播
+        </Button>
+        <Button
+          size="small"
+          disabled={status !== 'streaming'}
+          onClick={() => {
+            stopped.current = true;
+            setStatus('stopped');
+          }}
+        >
+          停止
+        </Button>
+        <span className="min-w-0 flex-1 truncate text-xs text-fg-tertiary">
+          {status === 'stopped'
+            ? '停在当前：只复制已经显示出来的部分'
+            : rated
+              ? `已评分：${rated === 'up' ? '有帮助' : '没帮助'}`
+              : '落定后才出复制 / 重试 / 评分'}
+        </span>
+      </div>
+    </Stack>
+  );
+}
+
+const WEB_SOURCES = [
+  {
+    key: 'mdn',
+    title: 'prefers-reduced-motion · CSS',
+    url: 'https://developer.mozilla.org/docs/Web/CSS/@media/prefers-reduced-motion',
+    snippet: '检测用户是否要求系统减少动效。',
+  },
+  {
+    key: 'wcag',
+    title: 'WCAG 2.2 · Animation from interactions',
+    url: 'https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions',
+    snippet: '交互触发的动效要能关掉，除非它对功能必不可少。',
+  },
+  {
+    key: 'sara',
+    title: 'A guide to designing accessible focus indicators',
+    url: 'https://www.sarasoueidan.com/blog/focus-indicators/',
+    snippet: '焦点样式要在深色、浅色与低对比背景上都看得见。',
+  },
+  {
+    key: 'scroll',
+    title: 'animation-timeline · scroll()',
+    url: 'https://developer.mozilla.org/docs/Web/CSS/animation-timeline',
+    snippet: '把动画进度绑到滚动位置，不用监听 scroll 事件。',
+  },
+];
+
+function WebSearchDemo() {
+  const [run, setRun] = useState(0);
+  const [count, setCount] = useState(0);
+  const [phase, setPhase] = useState<'searching' | 'done'>('searching');
+  const [reply, setReply] = useState(false);
+  const [typed, setTyped] = useState(false);
+
+  useEffect(() => {
+    const timers: number[] = [];
+    setCount(0);
+    setPhase('searching');
+    setReply(false);
+    setTyped(false);
+
+    WEB_SOURCES.forEach((_, i) => {
+      timers.push(window.setTimeout(() => setCount(i + 1), 320 + i * 280));
+    });
+    const settled = 320 + WEB_SOURCES.length * 280;
+    timers.push(window.setTimeout(() => setPhase('done'), settled + 200));
+    timers.push(window.setTimeout(() => setReply(true), settled + 620));
+
+    return () => timers.forEach((id) => window.clearTimeout(id));
+  }, [run]);
+
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-3">
+      <AgentWebSearch
+        sources={WEB_SOURCES.slice(0, count)}
+        status={phase}
+        query="动画关掉以后 状态变化"
+        progress={count / WEB_SOURCES.length}
+        expect={WEB_SOURCES.length}
+        defaultOpen
+      />
+
+      {reply ? (
+        <AgentWebSearchAnswer key={run} play speed={80} onComplete={() => setTyped(true)}>
+          <>
+            <p>
+              先说结论：<strong>动效可以关，状态变化不能关</strong>。用户要的是不晕，不是看不到反馈
+              <AgentWebSearchCitation source={WEB_SOURCES[0]} index={1} />。
+            </p>
+            <ul>
+              <li>
+                位移、缩放、模糊这类「动」的，在 <code>prefers-reduced-motion</code> 下直接砍掉
+                <AgentWebSearchCitation source={WEB_SOURCES[1]} index={2} />；
+              </li>
+              <li>
+                颜色、透明度、焦点环这类「状态」的要留着，而且要比平时更明显
+                <AgentWebSearchCitation source={WEB_SOURCES[2]} index={3} />。
+              </li>
+            </ul>
+            <p>
+              你们的 scroll-fade 正好是第二类：关掉的是位移，留下的是边缘渐隐
+              <AgentWebSearchCitation source={WEB_SOURCES[3]} index={4} />。
+            </p>
+          </>
+        </AgentWebSearchAnswer>
+      ) : (
+        <div className="flex items-center gap-1.5 text-xs text-fg-tertiary">
+          <span className="ax-stream-dot" aria-hidden />
+          结果先占位，凑齐了再写回答
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
+        <Button size="small" onClick={() => setRun((v) => v + 1)}>
+          重播搜索
+        </Button>
+        <span className="min-w-0 flex-1 truncate text-xs text-fg-tertiary">
+          {phase === 'searching'
+            ? '搜索中：标签扫光、占位格留着'
+            : typed
+              ? '回答打完，引用是整块落下的'
+              : '搜索完成，正文逐字打、引用整块落'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function ConfirmationDemo() {
   const [status, setStatus] = useState<AgentConfirmStatus>('pending');
   return (
@@ -484,6 +674,27 @@ export function AgentTemplate() {
         <SourcesDemo />
         <Hint>
           <code>[n]</code> 悬停开小卡，带摘录与域名；键盘用户可以直接点进原页面。
+        </Hint>
+      </Demo>
+
+      <Demo label="流式回答" code="AgentStreamingResponse" span="full" dir="column">
+        <StreamingDemo />
+        <Hint>
+          落字是「一阵一阵」的，标点后停一拍；新字从虚焦里长出来，行尾一枚光点跟着滑。
+          粗体、代码、链接在出现那一刻就是样式 —— 不会先露出 <code>**</code> 再合并。
+          <br />
+          <code>status</code> 三态：streaming 逐字、done 把剩下的追完、stopped 停在当前（复制也只给看得到的部分）。
+        </Hint>
+      </Demo>
+
+      <Demo label="联网搜索" code="AgentWebSearch" span="full" dir="column">
+        <WebSearchDemo />
+        <Hint>
+          搜索胶囊：环形进度套在地球外面，站点图标叠着、悬停散开，条数写在标签里。
+          展开是来源卡，搜索中先占格 —— 结果一条条长进来，比最后一起蹦出来更像「在搜」。
+          <br />
+          <code>AgentWebSearchAnswer</code> 只打正文，<code>AgentWebSearchCitation</code> 整块落下，
+          悬停出小卡、点击开原页。
         </Hint>
       </Demo>
 

@@ -13,8 +13,8 @@ import '@octop/ui/style.css';
 ```
 
 - **API 形态**：数据驱动的 `items`（Tabs / Collapse / Menu / Steps / Descriptions）、`destroyOnHidden`、`Divider titlePlacement`、`Button iconPosition`、`Modal.xxx` 命令式 API
-- **组件**：65 个文件、68 个导出（55 基础 + 13 高级）、约 12.9k 行实现，零运行时主题
-- **产物**：`dist/index.js`（~284KB / gzip 67KB）、`dist/octop-ui.css`（~72KB / gzip 13KB）、完整 `.d.ts`
+- **组件**：79 个文件、68 个基础导出（55 基础 + 13 高级）+ 19 个 Agent 模板导出、约 14.5k 行实现，零运行时主题
+- **产物**：`dist/index.js`（~339KB / gzip 79KB）、`dist/octop-ui.css`（~94KB / gzip 17KB）、完整 `.d.ts`
 - **动效**：shadcn 的 `animate-in` / `animate-out` 组合类（`tw-animate-css`），时长与曲线仍走 Astryx 令牌
 - **React**：`^18.2 || ^19`，声明为 peer dependency，不打包进产物
 
@@ -22,7 +22,7 @@ import '@octop/ui/style.css';
 
 ![展厅首屏](docs/demo-light.png)
 
-> 展厅（`npm run dev`）顶栏分 **组件 / 场景 / Agent** 三个视图：组件视图按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开；场景视图拼出 6 个业务页面；Agent 视图再补 5 屏「过程可见」的界面。三个视图都验过浅色 / 深色 / 390px 窄屏。
+> 展厅（`npm run dev`）顶栏分 **组件 / 场景 / Agent** 三个视图：组件视图按 基础 / 布局 / 录入 / 展示 / 反馈 / 导航 / 高级 七组把 68 个组件铺开；场景视图拼出 6 个业务页面；Agent 视图再补 6 屏「过程可见」的界面。三个视图都验过浅色 / 深色 / 390px 窄屏。
 > 每次 push 到 `main`，`.github/workflows/pages.yml` 会构建并发布到 GitHub Pages。
 
 场景视图用 `?view=scenes&scene=<id>` 定位，可以直接把某一块发给同事：
@@ -263,7 +263,8 @@ Citation/CitationList、CodeBlock、OverflowList、SelectionToolbar、HoverCard�
 
 **Agent 模板**：AgentBubble / AgentActions / AgentSender / AgentPrompts / AgentWelcome /
 AgentThoughtChain / AgentReasoning / AgentTool / AgentSources / AgentInlineCitation /
-AgentConfirmation / AgentPlan / AgentContext / AgentModelSelector / AgentChat。
+AgentConfirmation / AgentPlan / AgentContext / AgentModelSelector / AgentChat /
+AgentStreamingResponse / AgentWebSearch / AgentWebSearchAnswer / AgentWebSearchCitation。
 
 **工具类**：`scroll-fade`（含 `-x/-y/-t/-b/-l/-r/-s/-e`、尺寸档、`-none`）、
 `shimmer`（含 `-once/-reverse/-none`、`duration/spread/angle` 档）。
@@ -387,7 +388,7 @@ const POPUP_MOTION = [
 | Toast | 125ms：自上方 8px 落下 | — |
 
 - 方向类用的是 `data-[side=*]`：Select 在上方弹出就从下方推入，不需要 JS 判断 placement。
-- 时长走 `duration-[var(--ax-dur-*)]`，所以「95 / 125 / 165 / 225 / 300 / 400 / 525」这套时钟没有变成魔数。
+- 时长走 `duration-[var(--ax-dur-medium)]` 这类变量，所以「95 / 125 / 165 / 225 / 300 / 400 / 525」这套时钟没有变成魔数。
 - `tw-animate-css` 只在构建期用（CSS 已经预编译进 `dist/octop-ui.css`），消费方不需要装 Tailwind 或这个包。
 - 全局 `prefers-reduced-motion` 仍然生效：动画时长压到 1ms，Radix 会在下一帧卸载浮层。
 
@@ -458,6 +459,8 @@ const POPUP_MOTION = [
 | — | `AgentWelcome` | `icon`、`title`、`description`、`items` |
 | Chat | `AgentChat` | `AgentChat.Header` / `.Body` / `.Footer` |
 | Message actions | `AgentActions` | `items`（`label` / `icon` / `danger`）、`variant`、`size`、`fadeIn` |
+| Streaming Response | `AgentStreamingResponse` | `text`、`status`（streaming/done/stopped）、`speed`、`ink`、`actions`、`onRetry`、`onFeedback`、`onCopy` |
+| Web Search | `AgentWebSearch` / `AgentWebSearchAnswer` / `AgentWebSearchCitation` | `sources`、`status`、`query`、`progress`、`expect`、`linked`、`open`；回答侧 `play`、`speed`、`onComplete` |
 
 状态沿用 antd Steps 的写法：`pending | running | success | error`，同时认 `wait / process / finish` 三个旧名，
 所以从 `<Steps status="process">` 迁过来不用改字符串。
@@ -500,6 +503,46 @@ import {
    回到底部再恢复。滚动监听只在容器上挂一个 passive listener，内容高度用 ResizeObserver 看。
 4. **`ChatMessage` 变成了 `AgentBubble` 的门面**：库里只有一套气泡排版，`role` / `name` / `status`
    这些旧参数照旧可用。
+
+### 流式回答与联网搜索
+
+两块「模型还在说」的界面。前者只管一段还在长的文字，后者把「搜了什么、答案引用谁」摊开：
+
+```tsx
+import {
+  AgentStreamingResponse, AgentWebSearch, AgentWebSearchAnswer, AgentWebSearchCitation,
+} from '@octop/ui';
+
+<AgentStreamingResponse
+  text={message.content}          // 随着 token 增长，支持 markdown
+  status={done ? 'done' : running ? 'streaming' : 'stopped'}
+  ink="var(--ax-accent)"          // 新字先落在这个颜色上，再淡回正文色
+  onRetry={retry}
+  onFeedback={(r) => rate(r)}     // up / down / null（再点一次取消）
+/>
+
+<AgentWebSearch sources={sources} status="searching" query="reduced motion" expect={4} />
+<AgentWebSearchAnswer play={!thinking}>
+  动效可以关，状态变化不能关
+  <AgentWebSearchCitation source={sources[0]} index={1} />
+  。
+</AgentWebSearchAnswer>
+```
+
+**先解析，再揭示。** 流式渲染最大的坑是「对着半截 markdown 跑解析器」：`**` 先露出来再合并。这里的做法是
+先把全文解析成 block → token，每个 token 记住自己在原文里的偏移；落字时只按已揭示的字符数裁剪 token，
+所以粗体、行内代码、链接在出现的那一刻就已经是样式。
+
+**速度是按「追平后」算的。** `speed` 是最追平之后每秒多少个词（中文按字折算），落后一百多个字符时自动加速，
+一次大 token 不会积压成卡顿；标点后停 70–150ms，落字本身按 45–115ms 的随机间隔一阵一阵走 ——
+均匀速度读起来像机器。
+
+**光点不是光标。** 它不是「输入位置」，而是「字从这里长出来」：新字从 3.5px 的虚焦里长出，
+行尾那枚 5px 的点和落字色同色。行内代码自带底色，虚焦会把色块一起糊开，所以它只淡入、不虚焦。
+
+**搜索先占格，再长结果。** 环形进度套在地球外面，站点图标叠成一小摞、悬停散开，条数写在标签里；
+结果是先占格、再一条条长进来，比最后一起蹦出来更像「在搜」。`AgentWebSearchAnswer` 只给正文打字，
+`AgentWebSearchCitation` 整块落下 —— 引用是事实，不该有「正在打出来」的中间态。
 
 和 antd-x 的差异：`ThoughtChain` 这里拆成了三件 —— `AgentThoughtChain`（骨架）、`AgentReasoning`（思考）、
 `AgentTool`（工具）；`Sender` 的 `submitType` 只保留 `enter` / `shiftEnter`，没有做语音转文字，

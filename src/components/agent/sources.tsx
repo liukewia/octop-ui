@@ -13,7 +13,8 @@ export interface AgentSourceItem {
   snippet?: React.ReactNode;
 }
 
-function readDomain(url?: string) {
+/** 从 url 里取域名，去掉 www；解析失败返回 undefined */
+export function readDomain(url?: string) {
   if (!url) return undefined;
   try {
     return new URL(url).hostname.replace(/^www\./, '');
