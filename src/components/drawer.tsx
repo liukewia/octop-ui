@@ -26,6 +26,7 @@ export interface DrawerProps {
   width?: number | string;
   height?: number | string;
   closable?: boolean;
+  /** 遮罩，默认每层都有；第 2 层起自动稀释，`false` 关掉 */
   mask?: boolean;
   maskClosable?: boolean;
   keyboard?: boolean;
@@ -47,10 +48,17 @@ export interface DrawerProps {
 interface DrawerNest {
   placement: DrawerPlacement;
   distance: number;
+  /** 根层为 0，每嵌一层 +1；遮罩强度与 z-index 都按它递推 */
+  depth: number;
+  /** 父层实际用的 z-index 基值：子层从这里往上接，显式设过 zIndex 时才不会被子层盖住 */
+  baseZ?: number;
   register: () => () => void;
 }
 
 const DrawerNestContext = createContext<DrawerNest | null>(null);
+
+/** 每层遮罩的不透明度：根层吃满，往上逐级稀释 */
+const MASK_STACK = ['100%', '62%', '46%', '38%'];
 
 const BOX_CLASS: Record<DrawerPlacement, string> = {
   right: 'inset-y-0 right-0 h-full rounded-s-container',
@@ -96,6 +104,10 @@ export function Drawer({
   const [nestCount, setNestCount] = useState(0);
 
   const parent = useContext(DrawerNestContext);
+  const depth = parent ? parent.depth + 1 : 0;
+  // 父层给过 zIndex 就往上接两级，否则继续靠 DOM 顺序叠
+  const resolvedZ = zIndex ?? (parent?.baseZ !== undefined ? parent.baseZ + 2 : undefined);
+  const maskStrength = MASK_STACK[Math.min(depth, MASK_STACK.length - 1)];
 
   const register = useCallback(() => {
     setNestCount((count) => count + 1);
@@ -117,17 +129,17 @@ export function Drawer({
   }, [parent, isOpen]);
 
   const nestValue = useMemo<DrawerNest>(
-    () => ({ placement, distance: pushDistance, register }),
-    [placement, pushDistance, register],
+    () => ({ placement, distance: pushDistance, depth, baseZ: resolvedZ, register }),
+    [placement, pushDistance, depth, resolvedZ, register],
   );
 
   const isVertical = placement === 'top' || placement === 'bottom';
   // 窄屏两块面板都接近满宽，让出 180px 只会切出一溜被截断的文字 —— 手机上直接盖上去
   const isMobile = useIsMobile();
   const offset = isMobile ? 0 : pushDistance * nestCount;
-  // 子层默认不再压一层遮罩：页面已经被最外层的遮罩压暗了，
-  // 再叠一次会把父层也抹黑，多级抽屉就只剩最上面一层看得见。
-  const showMask = mask ?? !parent;
+  // 每一层都压遮罩：子层飘在一张没被压暗的父面板上，读不出「又深了一层」。
+  // 但强度逐级递减，最深的页面只被压一次实、上面几层各添一点。
+  const showMask = mask ?? true;
 
   return (
     <DrawerNestContext.Provider value={nestValue}>
@@ -143,7 +155,13 @@ export function Drawer({
           {showMask && (
             <DialogPrimitive.Overlay
               className={cn('ax-scrim fixed inset-0 z-50', FADE_MOTION)}
-              style={{ zIndex }}
+              data-stack={depth ? '' : undefined}
+              style={
+                {
+                  zIndex: resolvedZ,
+                  ...(depth ? { '--ax-scrim-strength': maskStrength } : null),
+                } as React.CSSProperties
+              }
             />
           )}
           <DialogPrimitive.Content
@@ -156,7 +174,7 @@ export function Drawer({
               if (!keyboard) e.preventDefault();
             }}
             style={{
-              zIndex: zIndex ? zIndex + 1 : undefined,
+              zIndex: resolvedZ !== undefined ? resolvedZ + 1 : undefined,
               ...(isVertical ? { maxHeight: height ?? '85dvh' } : { width }),
               // 推开用 inset 而不是 transform：transform 已经归动效所有
               ...(offset ? { [PUSH_EDGE[placement]]: offset } : null),

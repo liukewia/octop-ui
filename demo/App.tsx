@@ -171,7 +171,7 @@ export default function App() {
               </button>
             </Tooltip>
             <span className="ml-1 hidden h-8 items-center rounded-full bg-accent px-3 text-base font-medium whitespace-nowrap text-on-accent sm:inline-flex">
-              v0.7.0
+              v0.7.1
             </span>
           </div>
         </header>

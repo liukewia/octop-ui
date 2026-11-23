@@ -130,7 +130,10 @@ export function Advanced() {
       <Demo label="多级抽屉" code="<Drawer push={{ distance: 180 }}>" span="full" dir="block">
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => setLevel(1)}>打开第一层</Button>
-          <Hint>父层被推开 180px，关掉子层自动归位；嵌套写法照旧，把 Drawer 写在父层 children 里即可。</Hint>
+          <Hint>
+            父层被推开 180px，子层自带一层更浅的遮罩；关掉子层自动归位，嵌套写法照旧，把 Drawer
+            写在父层 children 里即可。
+          </Hint>
         </div>
 
         <Drawer
@@ -145,7 +148,9 @@ export function Advanced() {
           }
         >
           <Stack>
-            <p className="m-0">这一层是父级。子级打开时它会向左让出 180px，而不是原地被盖住。</p>
+            <p className="m-0">
+              这一层是父级。子级打开时它会向左让出 180px，并被压上一层比自己更浅的遮罩。
+            </p>
             <p className="m-0 text-fg-tertiary">点击右下角按钮进入第二层。</p>
           </Stack>
 

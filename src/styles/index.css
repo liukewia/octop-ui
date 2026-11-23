@@ -530,6 +530,11 @@
     /* 只有一层实色遮罩：模糊在低端机上贵，而且会把关键内容糊掉 */
     background: var(--ax-mask);
   }
+  /* 多级抽屉：第 2 层起遮罩按 --ax-scrim-strength 稀释。
+     全量叠上去会把父层压成一块死黑，但完全不压又读不出「上来了一层」。 */
+  .ax-scrim[data-stack] {
+    background: color-mix(in oklab, var(--ax-mask) var(--ax-scrim-strength, 62%), transparent);
+  }
 
   /* ---- 链接：下划线而不是品牌蓝 ---- */
   .ax-link {
