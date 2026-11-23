@@ -335,6 +335,11 @@
 
 /* --------------------------------------------------------------- 关键帧 */
 
+@keyframes ax-sheet-exit {
+  from { transform: translateY(min(max(var(--ax-sheet-dismiss, 0px), var(--ax-sheet-drag, 0px)), 100%)); }
+  to { transform: translateY(100%); }
+}
+
 @keyframes ax-spin-arc {
   to {
     transform: rotate(1turn);

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { ENTER_ONCE } from '../lib/motion';
 import { Button } from './button';
 
 export interface TourStep {
@@ -29,7 +30,7 @@ export interface TourProps {
 export function Tour({
   steps = [],
   open,
-  current = 0,
+  current,
   onChange,
   onClose,
   onFinish,
@@ -37,7 +38,8 @@ export function Tour({
   className,
   style,
 }: TourProps) {
-  const [index, setIndex] = useState(current);
+  const [innerIndex, setIndex] = useState(0);
+  const index = current ?? innerIndex;
   const step = steps[index];
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -54,9 +56,14 @@ export function Tour({
       if (card) setCardSize({ width: card.offsetWidth, height: card.offsetHeight });
     };
     update();
+    const observer = new ResizeObserver(update);
+    if (cardRef.current) observer.observe(cardRef.current);
+    const target = step?.target?.();
+    if (target) observer.observe(target);
     window.addEventListener('scroll', update, true);
     window.addEventListener('resize', update);
     return () => {
+      observer.disconnect();
       window.removeEventListener('scroll', update, true);
       window.removeEventListener('resize', update);
     };
@@ -78,25 +85,38 @@ export function Tour({
   const viewportW = typeof window === 'undefined' ? 1280 : window.innerWidth;
   const viewportH = typeof window === 'undefined' ? 800 : window.innerHeight;
 
-  let cardStyle: React.CSSProperties = {
-    top: viewportH / 2 - cardSize.height / 2,
-    left: viewportW / 2 - cardSize.width / 2,
-  };
+  const placement = step.placement ?? 'bottom';
+  let top = (viewportH - cardSize.height) / 2;
+  let left = (viewportW - cardSize.width) / 2;
 
-  if (rect) {
-    const placement = step.placement ?? 'bottom';
+  if (rect && placement !== 'center') {
     const below = rect.bottom + gap;
     const above = rect.top - cardSize.height - gap;
-    if (placement === 'right') {
-      cardStyle = { top: rect.top, left: rect.right + gap };
-    } else if (placement === 'left') {
-      cardStyle = { top: rect.top, left: rect.left - cardSize.width - gap };
-    } else if (placement === 'top' || (placement === 'bottom' && below + cardSize.height > viewportH && above > 0)) {
-      cardStyle = { top: Math.max(8, above), left: Math.min(Math.max(8, rect.left), viewportW - cardSize.width - 8) };
+    const right = rect.right + gap;
+    const before = rect.left - cardSize.width - gap;
+    if (placement === 'right' || placement === 'left') {
+      const preferred = placement === 'right' ? right : before;
+      const alternate = placement === 'right' ? before : right;
+      const fits = (x: number) => x >= padding && x + cardSize.width <= viewportW - padding;
+      if (fits(preferred) || fits(alternate)) {
+        left = fits(preferred) ? preferred : alternate;
+        top = rect.top;
+      } else {
+        left = rect.left;
+        top = below + cardSize.height > viewportH - padding && above >= padding ? above : below;
+      }
     } else {
-      cardStyle = { top: Math.min(below, viewportH - cardSize.height - 8), left: Math.min(Math.max(8, rect.left), viewportW - cardSize.width - 8) };
+      left = rect.left;
+      const fitsBelow = below + cardSize.height <= viewportH - padding;
+      const fitsAbove = above >= padding;
+      top = placement === 'top' ? (fitsAbove || !fitsBelow ? above : below) : (!fitsBelow && fitsAbove ? above : below);
     }
   }
+
+  const cardStyle = {
+    top: Math.max(padding, Math.min(top, viewportH - cardSize.height - padding)),
+    left: Math.max(padding, Math.min(left, viewportW - cardSize.width - padding)),
+  };
 
   const isLast = index === steps.length - 1;
 
@@ -122,7 +142,7 @@ export function Tour({
       )}
       {rect && (
         <div
-          className="pointer-events-none absolute rounded-element ring-2 ring-accent ring-offset-2 ring-offset-transparent transition-all duration-[225ms]"
+          className="pointer-events-none absolute rounded-element ring-2 ring-accent ring-offset-2 ring-offset-transparent"
           style={{
             top: rect.top - padding,
             left: rect.left - padding,
@@ -134,13 +154,13 @@ export function Tour({
       <div
         ref={cardRef}
         className={cn(
-          'absolute w-[min(320px,calc(100vw-32px))] animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 rounded-container border border-line bg-surface p-4 shadow-high duration-[var(--ax-dur-fast-max)] ease-standard',
+          'absolute w-[min(320px,calc(100vw-32px))] max-h-[calc(100dvh-16px)] overflow-y-auto animate-in fade-in-0 rounded-container border border-line bg-surface p-4 shadow-high duration-[var(--ax-dur-fast-max)] ease-standard',
           className,
         )}
         style={{ ...cardStyle, ...style }}
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 text-base font-semibold text-fg">{step.title}</div>
+          <div key={index} className={cn('min-w-0 text-base font-semibold text-fg', ENTER_ONCE)}>{step.title}</div>
           <button
             type="button"
             aria-label="关闭引导"
@@ -151,7 +171,7 @@ export function Tour({
           </button>
         </div>
         {step.cover && <div className="mt-3 overflow-hidden rounded-inner">{step.cover}</div>}
-        <div className="mt-1.5 text-sm leading-relaxed text-fg-secondary">{step.description}</div>
+        <div key={`description-${index}`} className={cn('mt-1.5 text-sm leading-relaxed text-fg-secondary', ENTER_ONCE)}>{step.description}</div>
         <div className="mt-4 flex items-center justify-between gap-2">
           <span className="text-xs tabular-nums text-fg-tertiary">
             {index + 1} / {steps.length}
@@ -161,7 +181,7 @@ export function Tour({
               <Button
                 size="small"
                 onClick={() => {
-                  setIndex(index - 1);
+                  if (current === undefined) setIndex(index - 1);
                   onChange?.(index - 1);
                 }}
               >
@@ -177,7 +197,7 @@ export function Tour({
                   onClose?.();
                   return;
                 }
-                setIndex(index + 1);
+                if (current === undefined) setIndex(index + 1);
                 onChange?.(index + 1);
               }}
             >

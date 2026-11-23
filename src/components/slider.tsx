@@ -56,6 +56,10 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
   const [inner, setInner] = useState<SliderValue>(defaultValue ?? value ?? initial);
   const current = value ?? inner;
   const values = Array.isArray(current) ? current : [current];
+  const markPosition = (key: string) => {
+    const percent = max === min ? 0 : ((Number(key) - min) / (max - min)) * 100;
+    return `${Boolean(vertical) !== Boolean(reverse) ? 100 - percent : percent}%`;
+  };
   const [dragging, setDragging] = useState(false);
 
   const commit = (next: SliderValue) => {
@@ -90,6 +94,8 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
           onChangeComplete?.(next.length > 1 ? next : next[0]);
         }}
         onPointerDown={() => setDragging(true)}
+        onPointerUp={() => setDragging(false)}
+        onLostPointerCapture={() => setDragging(false)}
         className={cn(
           'relative flex touch-none select-none items-center',
           vertical ? 'h-full w-auto flex-col' : 'h-3 w-full',
@@ -102,6 +108,17 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
           <SliderPrimitive.Range
             className={cn('absolute rounded-full bg-accent', vertical ? 'w-full' : 'h-full')}
           />
+          {dots && marks && Object.keys(marks).map((key) => (
+            <span
+              key={key}
+              aria-hidden
+              className={cn(
+                'pointer-events-none absolute size-1 rounded-full bg-fg-tertiary',
+                vertical ? 'left-1/2 -translate-x-1/2 -translate-y-1/2' : 'top-1/2 -translate-x-1/2 -translate-y-1/2',
+              )}
+              style={vertical ? { top: markPosition(key) } : { left: markPosition(key) }}
+            />
+          ))}
         </SliderPrimitive.Track>
         {values.map((val, index) => (
           <SliderPrimitive.Thumb
@@ -119,7 +136,7 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
                 'pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-inner bg-accent px-1.5 py-0.5 text-2xs font-medium tabular-nums text-on-accent',
                 'opacity-0 transition-opacity duration-[125ms]',
                 (tooltip?.open ?? dragging) && 'opacity-100',
-                'group-hover:opacity-100',
+                tooltip?.open === undefined && 'group-hover:opacity-100 group-focus-visible:opacity-100',
                 vertical ? 'top-full mt-2' : '-top-8',
               )}
             >
@@ -132,8 +149,6 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
       {marks && (
         <div className={cn('relative', vertical ? 'absolute inset-y-0 left-6 w-20' : 'mt-2 h-4 w-full')}>
           {Object.entries(marks).map(([key, label]) => {
-            const n = Number(key);
-            const percent = ((n - min) / (max - min)) * 100;
             const text =
               typeof label === 'object' && label !== null && 'label' in label
                 ? (label as { label: React.ReactNode }).label
@@ -141,25 +156,11 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
             return (
               <span
                 key={key}
-                className="absolute -translate-x-1/2 whitespace-nowrap text-xs text-fg-tertiary"
-                style={vertical ? { top: `${100 - percent}%` } : { left: `${percent}%` }}
+                className={cn('absolute whitespace-nowrap text-xs text-fg-tertiary', vertical ? '-translate-y-1/2' : '-translate-x-1/2')}
+                style={vertical ? { top: markPosition(key) } : { left: markPosition(key) }}
               >
                 {text}
               </span>
-            );
-          })}
-        </div>
-      )}
-      {dots && marks && (
-        <div className="pointer-events-none relative -mt-4 h-1 w-full">
-          {Object.keys(marks).map((key) => {
-            const percent = ((Number(key) - min) / (max - min)) * 100;
-            return (
-              <span
-                key={key}
-                className="absolute size-1 -translate-x-1/2 rounded-full bg-accent"
-                style={{ left: `${percent}%` }}
-              />
             );
           })}
         </div>

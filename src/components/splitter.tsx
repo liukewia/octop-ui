@@ -42,45 +42,54 @@ const SplitterRoot = ({ layout = 'horizontal', onResize, onResizeEnd, className,
       return toPercent(child?.props.defaultSize, 100 / total);
     });
   });
-  const dragging = useRef<{ index: number; startPos: number; startSizes: number[] } | null>(null);
+  const dragging = useRef<{ id: number; index: number; startPos: number; startSizes: number[]; latest: number[] } | null>(null);
+
+  const resizePair = (initial: number[], index: number, delta: number) => {
+    const next = initial.slice();
+    const total = initial[index] + initial[index + 1];
+    const minimum = Math.min(8, total / 2);
+    next[index] = Math.min(total - minimum, Math.max(minimum, initial[index] + delta));
+    next[index + 1] = total - next[index];
+    return next;
+  };
 
   const apply = (next: number[]) => {
     const sum = next.reduce((a, b) => a + b, 0);
     const normalized = next.map((n) => (n / sum) * 100);
     setSizes(normalized);
     onResize?.(normalized);
+    return normalized;
   };
 
   const onPointerDown = (index: number) => (event: React.PointerEvent) => {
+    if (!event.isPrimary || event.button !== 0 || dragging.current) return;
     event.preventDefault();
-    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    event.currentTarget.setPointerCapture(event.pointerId);
     dragging.current = {
+      id: event.pointerId,
       index,
       startPos: vertical ? event.clientY : event.clientX,
-      startSizes: sizes.slice(),
+      startSizes: sizes,
+      latest: sizes,
     };
   };
 
   const onPointerMove = (event: React.PointerEvent) => {
     const state = dragging.current;
     const container = containerRef.current;
-    if (!state || !container) return;
+    if (!state || state.id !== event.pointerId || !container) return;
     const rect = container.getBoundingClientRect();
     const total = vertical ? rect.height : rect.width;
+    if (!total) return;
     const delta = ((vertical ? event.clientY : event.clientX) - state.startPos) / total;
-    const next = state.startSizes.slice();
-    const a = state.index;
-    const b = state.index + 1;
-    next[a] = Math.max(8, state.startSizes[a] + delta * 100);
-    next[b] = Math.max(8, state.startSizes[b] - delta * 100);
-    apply(next);
+    state.latest = apply(resizePair(state.startSizes, state.index, delta * 100));
   };
 
-  const onPointerUp = () => {
-    if (dragging.current) {
-      dragging.current = null;
-      onResizeEnd?.(sizes);
-    }
+  const endDrag = (event: React.PointerEvent) => {
+    const state = dragging.current;
+    if (!state || state.id !== event.pointerId) return;
+    dragging.current = null;
+    onResizeEnd?.(state.latest);
   };
 
   return (
@@ -88,8 +97,8 @@ const SplitterRoot = ({ layout = 'horizontal', onResize, onResizeEnd, className,
       ref={containerRef}
       className={cn('flex size-full min-h-0 min-w-0', vertical ? 'flex-col' : 'flex-row', className)}
       onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerLeave={onPointerUp}
+      onPointerUp={endDrag}
+      onLostPointerCapture={endDrag}
       {...rest}
     >
       {panels.map((panel, index) => (
@@ -107,22 +116,14 @@ const SplitterRoot = ({ layout = 'horizontal', onResize, onResizeEnd, className,
               tabIndex={0}
               onPointerDown={onPointerDown(index)}
               onKeyDown={(e) => {
-                const step = 5;
-                if (e.key === (vertical ? 'ArrowDown' : 'ArrowRight')) {
-                  const next = sizes.slice();
-                  next[index] += step;
-                  next[index + 1] -= step;
-                  apply(next);
-                }
-                if (e.key === (vertical ? 'ArrowUp' : 'ArrowLeft')) {
-                  const next = sizes.slice();
-                  next[index] -= step;
-                  next[index + 1] += step;
-                  apply(next);
-                }
+                const forward = e.key === (vertical ? 'ArrowDown' : 'ArrowRight');
+                const backward = e.key === (vertical ? 'ArrowUp' : 'ArrowLeft');
+                if (!forward && !backward) return;
+                e.preventDefault();
+                apply(resizePair(sizes, index, forward ? 5 : -5));
               }}
               className={cn(
-                'ax-focus group relative flex shrink-0 items-center justify-center bg-line-soft transition-colors hover:bg-accent/20',
+                'ax-focus group relative flex shrink-0 touch-none items-center justify-center bg-line-soft transition-colors hover:bg-accent/20',
                 vertical ? 'h-px w-full cursor-row-resize py-1' : 'h-full w-px cursor-col-resize px-1',
               )}
             >

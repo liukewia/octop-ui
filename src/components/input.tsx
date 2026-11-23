@@ -375,6 +375,7 @@ const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
         ) : undefined
       }
       {...rest}
+      className={cn(enterButton && 'min-w-0 flex-1', rest.className)}
     />
   );
 

@@ -1,6 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { cn } from '../../lib/cn';
 import { FADE_MOTION, SHEET_MOTION } from '../../lib/motion';
 
@@ -65,12 +65,34 @@ export function BottomSheet({
   const [innerOpen, setInnerOpen] = useState(!!defaultOpen);
   const isOpen = open ?? innerOpen;
   const [drag, setDrag] = useState(0);
-  const startY = useRef(0);
-  const dragging = useRef(false);
+  const [dismissOffset, setDismissOffset] = useState(0);
+  const [tracking, setTracking] = useState(false);
+  const start = useRef<{ id: number; y: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (isOpen) {
+      setDrag(0);
+      setTracking(false);
+      setDismissOffset(0);
+    }
+    start.current = null;
+  }, [isOpen]);
+
+  useLayoutEffect(() => {
+    if (isOpen && dismissOffset) setDismissOffset(0);
+  }, [isOpen, dismissOffset]);
 
   const close = () => {
     if (open === undefined) setInnerOpen(false);
     onClose?.();
+  };
+
+  const contentStyle: React.CSSProperties & Record<'--ax-sheet-drag' | '--ax-sheet-dismiss', string> = {
+    zIndex: zIndex ? zIndex + 1 : undefined,
+    ...resolveHeight(height),
+    '--ax-sheet-drag': `${drag}px`,
+    '--ax-sheet-dismiss': `${dismissOffset}px`,
+    ...style,
   };
 
   return (
@@ -97,42 +119,50 @@ export function BottomSheet({
           onEscapeKeyDown={(e) => {
             if (!keyboard) e.preventDefault();
           }}
-          style={{
-            zIndex: zIndex ? zIndex + 1 : undefined,
-            ...resolveHeight(height),
-            ...(drag ? { transform: `translateY(${drag}px)` } : null),
-            ...style,
-          }}
+          style={contentStyle}
           className={cn(
             'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-page border-t border-line bg-surface shadow-high outline-none',
             SHEET_MOTION,
-            drag ? 'transition-none' : 'transition-transform duration-[225ms] ease-standard',
+            'translate-y-[var(--ax-sheet-drag)] data-[state=closed]:translate-y-0',
+            'data-[state=closed]:[animation-name:ax-sheet-exit]',
+            !tracking && 'transition-[translate] duration-[200ms] ease-standard data-[state=closed]:transition-none',
             className,
           )}
         >
           {showHandle && (
             <div
-              className="flex justify-center pt-2 pb-1"
+              className={cn('flex justify-center pt-2 pb-1', dragToClose && 'touch-none cursor-grab active:cursor-grabbing')}
               onPointerDown={(e) => {
-                if (!dragToClose) return;
-                dragging.current = true;
-                startY.current = e.clientY;
+                if (!dragToClose || !e.isPrimary || e.button !== 0 || start.current) return;
+                start.current = { id: e.pointerId, y: e.clientY };
+                setTracking(true);
                 e.currentTarget.setPointerCapture(e.pointerId);
               }}
               onPointerMove={(e) => {
-                if (!dragging.current) return;
-                setDrag(Math.max(0, e.clientY - startY.current));
+                if (start.current?.id !== e.pointerId) return;
+                setDrag(Math.max(0, e.clientY - start.current.y));
               }}
-              onPointerUp={() => {
-                if (!dragging.current) return;
-                dragging.current = false;
-                if (drag > 96) close();
+              onPointerUp={(e) => {
+                if (start.current?.id !== e.pointerId) return;
+                const distance = Math.max(0, e.clientY - start.current.y);
+                start.current = null;
+                setTracking(false);
+                setDrag(0);
+                if (distance > 96) {
+                  setDismissOffset(distance);
+                  close();
+                }
+              }}
+              onLostPointerCapture={(e) => {
+                if (start.current?.id !== e.pointerId) return;
+                start.current = null;
+                setTracking(false);
                 setDrag(0);
               }}
             >
               <span
                 aria-hidden
-                className="h-1 w-9 cursor-grab touch-none rounded-full bg-line-strong active:cursor-grabbing"
+                className="h-1 w-9 rounded-full bg-line-strong"
               />
             </div>
           )}

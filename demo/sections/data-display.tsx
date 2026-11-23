@@ -335,11 +335,10 @@ export function DataDisplay() {
 
       <Demo label="走马灯" code="Carousel autoplay" span="full" dir="block">
         <Carousel autoplay autoplaySpeed={3200} className="overflow-hidden rounded-container">
-          {GALLERY.map((g, i) => (
+          {['bg-hue-blue-bg text-hue-blue-fg', 'bg-hue-pink-bg text-hue-pink-fg', 'bg-hue-green-bg text-hue-green-fg'].map((colors, i) => (
             <div
-              key={g}
-              className="flex h-[168px] items-center justify-center text-xl font-semibold text-fg"
-              style={{ background: g }}
+              key={colors}
+              className={`flex h-[168px] items-center justify-center text-xl font-semibold ${colors}`}
             >
               第 {i + 1} 屏
             </div>

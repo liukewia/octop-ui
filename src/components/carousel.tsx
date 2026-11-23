@@ -1,6 +1,7 @@
-import { Children, useEffect, useState } from 'react';
+import { Children, useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { useMediaQuery } from '../lib/hooks';
 
 export interface CarouselProps {
   children?: React.ReactNode;
@@ -27,6 +28,7 @@ export function Carousel({
   arrows = false,
   infinite = true,
   speed = 300,
+  easing,
   afterChange,
   beforeChange,
   initialSlide = 0,
@@ -36,27 +38,26 @@ export function Carousel({
 }: CarouselProps) {
   const slides = Children.toArray(children);
   const count = slides.length;
-  const [index, setIndex] = useState(initialSlide);
+  const [{ index: requested, wrap }, setSlide] = useState({ index: initialSlide, wrap: false });
+  const index = Math.max(0, Math.min(requested, count - 1));
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
-  const go = (next: number) => {
-    let target = next;
-    if (infinite) target = (next + count) % count;
-    else target = Math.min(Math.max(0, next), count - 1);
+  const go = useCallback((next: number) => {
+    if (count <= 1) return;
+    const target = infinite
+      ? (next + count) % count
+      : Math.min(Math.max(0, next), count - 1);
     if (target === index) return;
     beforeChange?.(index, target);
-    setIndex(target);
+    setSlide({ index: target, wrap: next !== target });
     afterChange?.(target);
-  };
+  }, [count, infinite, index, beforeChange, afterChange]);
 
   useEffect(() => {
-    if (!autoplay || count <= 1) return;
-    const timer = window.setInterval(() => {
-      beforeChange?.(index, (index + 1) % count);
-      setIndex((prev) => (prev + 1) % count);
-      afterChange?.((index + 1) % count);
-    }, autoplaySpeed);
-    return () => window.clearInterval(timer);
-  }, [autoplay, autoplaySpeed, count, index]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!autoplay || reducedMotion || count <= 1 || (!infinite && index === count - 1)) return;
+    const timer = window.setTimeout(() => go(index + 1), autoplaySpeed);
+    return () => window.clearTimeout(timer);
+  }, [autoplay, autoplaySpeed, count, go, index, infinite, reducedMotion]);
 
   return (
     <div
@@ -66,11 +67,19 @@ export function Carousel({
       aria-roledescription="carousel"
     >
       <div
-        className="flex h-full transition-transform ease-standard"
-        style={{ transform: `translateX(-${index * 100}%)`, transitionDuration: `${speed}ms` }}
+        className={cn('flex h-full ease-standard', wrap ? 'transition-none' : 'transition-transform')}
+        style={{
+          transform: `translateX(-${index * 100}%)`,
+          transitionDuration: `${speed}ms`,
+          transitionTimingFunction: easing,
+        }}
       >
         {slides.map((slide, i) => (
-          <div key={i} className="w-full shrink-0" aria-hidden={i !== index}>
+          <div
+            key={i}
+            className={cn('w-full shrink-0', wrap && i === index && speed > 0 && 'animate-in fade-in-0 duration-[180ms] ease-standard')}
+            aria-hidden={i !== index}
+          >
             {slide}
           </div>
         ))}
@@ -100,7 +109,7 @@ export function Carousel({
       {dots && count > 1 && (
         <div
           className={cn(
-            'absolute flex gap-1.5',
+            'absolute flex',
             dotPosition === 'bottom' && 'inset-x-0 bottom-3 justify-center',
             dotPosition === 'top' && 'inset-x-0 top-3 justify-center',
             dotPosition === 'left' && 'inset-y-0 start-3 flex-col justify-center',
@@ -115,8 +124,7 @@ export function Carousel({
               aria-current={i === index}
               onClick={() => go(i)}
               className={cn(
-                'h-1.5 rounded-full transition-all duration-[225ms] ease-standard',
-                i === index ? 'w-5 bg-accent' : 'w-1.5 bg-fg/30 hover:bg-fg/50',
+                'ax-focus group/dot grid size-6 place-items-center rounded-full',
               )}
             />
           ))}
