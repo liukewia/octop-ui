@@ -582,7 +582,7 @@ useLayoutEffect(() => {
 | `themeToCss` | 生成可粘贴的 CSS | `config` → `string` |
 | `applyTheme` | 运行时热更；`null` 还原 | `config \| null` |
 | `readStoredTheme` / `storeTheme` | 本地持久化（带校验） | — |
-| `THEME_PRESETS` / `DEFAULT_THEME` / `THEME_BASES` / `THEME_ACCENTS` / `THEME_FONTS` | 预设与候选值 | — |
+| `THEME_PRESETS` / `DEFAULT_THEME` / `OCTOP_THEME` / `THEME_BASES` / `THEME_ACCENTS` / `THEME_FONTS` | 预设与候选值 | — |
 
 四个取舍：
 
@@ -601,6 +601,24 @@ useLayoutEffect(() => {
 
 **中性色是明度阶，不是五套十六进制。** 五个基底只改 oklch 的 hue / chroma：画布 96.6%、
 次级字 38 / 50 / 64.5，深色 22 / 26 / 17。所以「暖石」「青苔」改的是色相，不是对比度。
+
+**Octop 主题**（`OCTOP_THEME`，预设里的 `Octop`）取自 TencentCloud/Octop 控制台改版
+（[#2754](https://github.com/TencentCloud/Octop/pull/2754)），用的是「墨阶」基底：
+
+| 取舍 | 取值（浅色 / 深色） |
+| --- | --- |
+| 页面 / 卡片 | `#fff` / `#0e0e0e` · `#141414` |
+| 侧栏、悬停底、卡片页脚 | `#f9f9f9`（= `canvas`） / `#0e0e0e` |
+| 文字 | 黑 90% · 70% · 50%（深色为白 90% · 62% · 45%） |
+| 描边 | 黑 8%（发丝线）；输入框悬停 / 聚焦 `line-strong`（≈ `#ccc`） |
+| 主按钮 | `#000` 实心，hover 80% 不透明度；深色翻成 `#fff` 底黑字 |
+| 圆角 | 5 → 内 5 / 元 8 / 容 10，对应 PR 的 `radius-sm/md/lg` 5 / 8 / 12 |
+| 密度 / 字体 | 紧凑（控件 28 / 36 / 44）+ 系统字体 |
+
+「墨阶」和别的基底不同：**不走灰色阶，文字与线条一律是黑（深色下是白）的透明度**，所以同一份令牌
+叠在任何底色上都不发灰。`<ThemeEditor />` 里选「Octop」预设即可，或直接 `applyTheme(OCTOP_THEME)`。
+PR 里的 `--fn-tab-*`、`--fn-btn-*`、`--fn-card-*` 在库里没有一一对应的令牌，因为这些组件本来就吃
+`fg` / `line` / `accent`，墨阶改了这三组，它们就跟着变了。
 
 展厅里这套就是主题视图（`?view=theme`）：改完切回组件视图，整站已经换了皮肤；
 文档里写死的 `radius 6 / 10 / 12 / 28` 也跟着令牌走（`applyTheme` 会广播一次 `octop:theme`）。
@@ -659,7 +677,7 @@ demo/
 - `npm run build`：类型声明 + 库产物，无外部依赖被打包（全部 external）
 - `npm run demo:build` + `demo:preview`：展厅可静态化，浅色 / 深色 / 390px 窄屏三套都在盯
 - GitHub Pages：<https://liukewia.github.io/octop-ui/> — push `main` 自动构建发布，线上浅色 / 深色均已核对
-- 主题：五套预设 × 浅色 / 深色逐一截图；改主色、圆角、密度、字体后刷新仍在，`重置` 能清掉 `<style>` 与 localStorage
+- 主题：七套预设 × 浅色 / 深色逐一截图；改主色、圆角、密度、字体后刷新仍在，`重置` 能清掉 `<style>` 与 localStorage
 
 ## License
 

@@ -6,7 +6,7 @@
    所以换主题不需要重新构建，也不需要给组件加任何 props。
    ============================================================================= */
 
-export type ThemeBaseId = 'neutral' | 'stone' | 'cool' | 'sage' | 'mauve';
+export type ThemeBaseId = 'neutral' | 'ink' | 'stone' | 'cool' | 'sage' | 'mauve';
 export type ThemeDensity = 'compact' | 'default' | 'relaxed';
 export type ThemeFont = 'figtree' | 'system' | 'serif' | 'mono';
 
@@ -36,6 +36,15 @@ export interface ThemeBase {
 
 export const THEME_BASES: ThemeBase[] = [
   { id: 'neutral', name: '中性', hint: '纯灰，不带色相', hue: 0, chroma: 0, swatch: '#f1f1f1', swatchDark: '#303030' },
+  {
+    id: 'ink',
+    name: '墨阶',
+    hint: '黑白透明度分级：文字 90 / 70 / 50，描边 8%',
+    hue: 0,
+    chroma: 0,
+    swatch: '#f9f9f9',
+    swatchDark: '#141414',
+  },
   { id: 'stone', name: '暖石', hint: '略偏暖，纸感', hue: 70, chroma: 0.006, swatch: '#f4f0e9', swatchDark: '#33302b' },
   { id: 'cool', name: '冷灰', hint: '略偏蓝，工具感', hue: 258, chroma: 0.008, swatch: '#edf0f6', swatchDark: '#2a2e37' },
   { id: 'sage', name: '青苔', hint: '略偏绿，自然感', hue: 160, chroma: 0.008, swatch: '#ecf3ee', swatchDark: '#2a312b' },
@@ -114,6 +123,21 @@ export const THEME_PRESETS: ThemePreset[] = [
     },
   },
   {
+    id: 'octop',
+    name: 'Octop',
+    hint: '黑白墨阶 + 黑色主按钮',
+    // 取自 TencentCloud/Octop#2754 的控制台改版：整页纯白、侧栏 #f9f9f9、
+    // 黑色实心主按钮（深色翻白）、文字 90/70/50 的透明度分级、8% 发丝描边。
+    config: {
+      base: 'ink',
+      accent: '#000000',
+      accentDark: '#ffffff',
+      radius: 5,
+      density: 'compact',
+      font: 'system',
+    },
+  },
+  {
     id: 'sand',
     name: '暖沙',
     hint: '暖中性 + 陶土',
@@ -180,7 +204,10 @@ export const THEME_PRESETS: ThemePreset[] = [
   },
 ];
 
-export const DEFAULT_THEME: ThemeConfig = THEME_PRESETS[0].config;
+export const DEFAULT_THEME: ThemeConfig = THEME_PRESETS.find((p) => p.id === 'mono')!.config;
+
+/** Octop 控制台主题：和预设里的 `octop` 是同一份，单独导出方便直接 `applyTheme(OCTOP_THEME)` */
+export const OCTOP_THEME: ThemeConfig = THEME_PRESETS.find((p) => p.id === 'octop')!.config;
 
 /* ------------------------------------------------------------------ 颜色工具 */
 
@@ -262,6 +289,71 @@ function deriveAccentDark(config: ThemeConfig): string {
 }
 
 /**
+ * 「墨阶」基底：不用灰色阶，文字与线条一律是黑（深色下是白）的透明度。
+ * 这样同一套令牌叠在任何底色上都不会发灰发脏，也是 Octop 控制台改版的取法：
+ * 文字 90 / 70 / 50，发丝描边 8%，hover 底 4% —— 色值全部来自该 PR 的 theme-vars.css。
+ */
+function inkTokens(): { light: Record<string, string>; dark: Record<string, string> } {
+  const black = (alpha: number) => oklch(0, 0, 0, alpha);
+  const white = (alpha: number) => oklch(1, 0, 0, alpha);
+  return {
+    light: {
+      bg: oklch(1, 0, 0),
+      surface: oklch(1, 0, 0),
+      raised: oklch(1, 0, 0),
+      // #f9f9f9：侧栏、悬停底、卡片页脚
+      canvas: oklch(0.985, 0, 0),
+      muted: black(0.05),
+      'muted-soft': black(0.03),
+      'muted-strong': black(0.08),
+
+      fg: black(0.9),
+      'fg-secondary': black(0.7),
+      'fg-tertiary': black(0.5),
+      'fg-disabled': black(0.28),
+      'fg-inverse': oklch(1, 0, 0),
+
+      line: black(0.08),
+      'line-soft': black(0.05),
+      // 输入框悬停 / 聚焦的 #ccc 描边
+      'line-strong': black(0.2),
+
+      'accent-hover': 'color-mix(in oklab, var(--ax-accent) 80%, transparent)',
+      'accent-soft': black(0.06),
+      press: black(0.08),
+      'press-soft': black(0.04),
+      skeleton: black(0.06),
+    },
+    dark: {
+      // #0e0e0e 页面 / #141414 卡片与侧栏
+      bg: oklch(0.17, 0, 0),
+      surface: oklch(0.205, 0, 0),
+      raised: oklch(0.24, 0, 0),
+      canvas: oklch(0.17, 0, 0),
+      muted: white(0.08),
+      'muted-soft': white(0.045),
+      'muted-strong': white(0.12),
+
+      fg: white(0.9),
+      'fg-secondary': white(0.62),
+      'fg-tertiary': white(0.45),
+      'fg-disabled': white(0.28),
+      'fg-inverse': oklch(0.18, 0, 0),
+
+      line: white(0.08),
+      'line-soft': white(0.05),
+      'line-strong': white(0.18),
+
+      'accent-hover': 'color-mix(in oklab, var(--ax-accent) 85%, transparent)',
+      'accent-soft': white(0.1),
+      press: white(0.1),
+      'press-soft': white(0.06),
+      skeleton: white(0.07),
+    },
+  };
+}
+
+/**
  * 从五个旋钮推出浅色与深色两套令牌。
  * 数值不是随手写的：中性色阶按 oklch 明度排，浅色 100 / 96.6 / 38 / 50，
  * 深色 22 / 26 / 17 / 65 —— 和库里原来那套十六进制是同一档位。
@@ -291,7 +383,9 @@ export function deriveTheme(config: ThemeConfig): ThemeTokens {
       ? 'color-mix(in oklab, var(--ax-accent) 86%, #000)'
       : 'color-mix(in oklab, var(--ax-accent) 86%, #fff)';
 
-  return {
+  const ink = base.id === 'ink' ? inkTokens() : null;
+
+  const tokens: ThemeTokens = {
     light: {
       bg: base.chroma === 0 ? oklch(1, 0, 0) : light(0.99),
       surface: base.chroma === 0 ? oklch(1, 0, 0) : light(1),
@@ -379,6 +473,12 @@ export function deriveTheme(config: ThemeConfig): ThemeTokens {
       font,
     },
   };
+
+  if (ink) {
+    Object.assign(tokens.light, ink.light);
+    Object.assign(tokens.dark, ink.dark);
+  }
+  return tokens;
 }
 
 /* ------------------------------------------------------------- CSS 生成 */
